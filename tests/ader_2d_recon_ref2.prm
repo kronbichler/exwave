@@ -1,0 +1,49 @@
+# mpirun: 2
+
+# --------------------------------------------------------------------------
+# Listing of Parameters
+# --------------------------------------------------------------------------
+
+# General parameters
+subsection General
+  set dimension = 2
+  set fe_degree = 3
+  set n_initial_intervals = 5
+  set n_refinements = 2
+  set grid_transform_factor = 0.1
+  set n_adaptive_refinements = 0
+  set adaptive_refinement_interval = 100
+end
+
+# Time stepping
+subsection TimeDiscretization
+  set time_integrator = ADER
+  set cfl_number = 0.3
+  set max_time_steps = 1000000
+  set final_time = 1.0
+  set output_every_time = 0.1
+  set cfl_stability_analysis = false
+end
+
+# The initial field
+subsection InitialField
+  set initital_cases = 1
+  set membrane_modes = 3
+end
+
+# ADER specific input parameters
+subsection ADER_TimeIntegration
+  set use_ader_post = true
+  set spectral_evaluation = true
+end
+
+# ADER LTS specific input parameters
+subsection ADERLTS_TimeIntegration
+  set max_n_clusters = 1
+  set max_diff_clusters = 1
+end
+
+# Misc
+subsection Miscellaneous
+  set output_parameters = false
+end

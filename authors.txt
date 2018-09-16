@@ -1,0 +1,9 @@
+AUTHORS of ExWave
+
+Svenja Schoeder
+(2013-2018: Technical University of Munich)
+(2018-:     Animal Logic)
+
+Martin Kronbichler
+(2008-2012: Uppsala University)
+(2013-:     Technical University of Munich

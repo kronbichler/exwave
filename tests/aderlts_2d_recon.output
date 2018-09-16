@@ -1,0 +1,63 @@
+
+deal.II git version a5cffe1 on branch master
+Number of MPI ranks:         1
+
+Number of global active cells: 225
+
+   Memory stats [MB]: 46 46 46
+
+Time step size: 0.000452899
+
+Number of degrees of freedom DG system: 24300
+ncluster vorher 3
+actual cluster diff 1
+needed to iterate 1 times to get valid categories
+final number of clusters 3
+ncluster vorher 3
+actual cluster diff 1
+needed to iterate 1 times to get valid categories
+final number of clusters 3
+cluster  0 contains 5 cells and works with time step 0.000452797
+cluster  1 contains 31 cells and works with time step 0.000905594
+cluster  2 contains 79 cells and works with time step 0.00135839
+cluster_timestepmultiples
+1
+2
+3
+n_clusters 3 clusterdiff 1 levelmax 3
+
+   Memory stats [MB]: 53 53 53
+   Time vectors: 0.000275465
+
+   Time step size: 0.00135839
+   Time:    0.00 , error p: 9.9920e-08 , error p post: 8.8326e-08 , error v: 0.0000e+00 , solution mag p: 5.0000e-01
+write output for time step 0 at time 0.00
+   Time:    0.10 , error p: 7.4340e-08 , error p post: 1.6185e-08 , error v: 1.1005e-07 , solution mag p: 1.1447e-01
+write output for time step 74 at time 0.10
+   Time:    0.20 , error p: 9.7200e-08 , error p post: 1.2267e-08 , error v: 1.4860e-07 , solution mag p: 4.4759e-01
+write output for time step 148 at time 0.20
+   Time:    0.30 , error p: 8.7043e-08 , error p post: 1.1834e-08 , error v: 1.4372e-07 , solution mag p: 3.2632e-01
+write output for time step 221 at time 0.30
+   Time:    0.40 , error p: 9.0264e-08 , error p post: 1.1891e-08 , error v: 1.0023e-07 , solution mag p: 2.9406e-01
+write output for time step 295 at time 0.40
+   Time:    0.50 , error p: 9.5304e-08 , error p post: 1.1492e-08 , error v: 1.1157e-07 , solution mag p: 4.6097e-01
+write output for time step 369 at time 0.50
+   Time:    0.60 , error p: 7.7297e-08 , error p post: 1.2080e-08 , error v: 1.1001e-07 , solution mag p: 7.4055e-02
+write output for time step 442 at time 0.60
+   Time:    0.70 , error p: 1.0052e-07 , error p post: 1.0233e-08 , error v: 1.4800e-07 , solution mag p: 4.9831e-01
+write output for time step 516 at time 0.70
+   Time:    0.80 , error p: 8.0045e-08 , error p post: 1.2202e-08 , error v: 1.2181e-07 , solution mag p: 1.6270e-01
+write output for time step 589 at time 0.80
+   Time:    0.90 , error p: 9.7298e-08 , error p post: 1.0845e-08 , error v: 1.0319e-07 , solution mag p: 4.2299e-01
+write output for time step 663 at time 0.90
+   Time:    1.00 , error p: 8.6266e-08 , error p post: 9.2821e-09 , error v: 1.1055e-07 , solution mag p: 3.5637e-01
+write output for time step 737 at time 1.00
+
+   Performed 737 time steps.
+   Average wallclock time per time step: 0.02s, time per element: 0.00s
+
+   Spent 1.61 s on output   and   13.98 s on computations.
+Computing 759 times:
+   Evaluate     :  8.61e-01 (p   0)  8.61e-01 8.61e-01 (p   0)
+   Inverse mass :  2.67e-01 (p   0)  2.67e-01 2.67e-01 (p   0)
+

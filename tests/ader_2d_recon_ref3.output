@@ -1,0 +1,45 @@
+
+deal.II git version a5cffe1 on branch master
+Number of MPI ranks:         4
+
+Number of global active cells: 1600
+   Memory stats [MB]: 48 48 48
+Time step size: 0.0010395
+
+Number of degrees of freedom DG system: 76800
+   Memory stats [MB]: 53 53.5 54
+   Time vectors: 0.0275222
+   Time step size: 0.00103994
+   Time:    0.00 , error p: 5.8943e-07 , error p post: 5.8239e-07 , error v: 0.0000e+00 , solution mag p: 5.0000e-01
+write output for time step 0 at time 0.00
+   Time:    0.10 , error p: 4.6136e-07 , error p post: 5.5146e-08 , error v: 6.4694e-07 , solution mag p: 1.1218e-01
+write output for time step 97 at time 0.10
+   Time:    0.20 , error p: 5.7037e-07 , error p post: 2.8248e-08 , error v: 8.9504e-07 , solution mag p: 4.4659e-01
+write output for time step 193 at time 0.20
+   Time:    0.30 , error p: 5.1779e-07 , error p post: 2.5504e-08 , error v: 8.3766e-07 , solution mag p: 3.2461e-01
+write output for time step 289 at time 0.30
+   Time:    0.40 , error p: 5.2275e-07 , error p post: 2.6327e-08 , error v: 6.1533e-07 , solution mag p: 2.9218e-01
+write output for time step 385 at time 0.40
+   Time:    0.50 , error p: 5.6750e-07 , error p post: 1.7959e-08 , error v: 6.6709e-07 , solution mag p: 4.6360e-01
+write output for time step 481 at time 0.50
+   Time:    0.60 , error p: 4.6484e-07 , error p post: 2.8553e-08 , error v: 6.7389e-07 , solution mag p: 7.1658e-02
+write output for time step 577 at time 0.60
+   Time:    0.70 , error p: 5.8957e-07 , error p post: 1.5346e-08 , error v: 9.1609e-07 , solution mag p: 4.9830e-01
+write output for time step 674 at time 0.70
+   Time:    0.80 , error p: 4.7894e-07 , error p post: 2.7230e-08 , error v: 7.2696e-07 , solution mag p: 1.5852e-01
+write output for time step 770 at time 0.80
+   Time:    0.90 , error p: 5.6588e-07 , error p post: 2.0199e-08 , error v: 6.3548e-07 , solution mag p: 4.2290e-01
+write output for time step 866 at time 0.90
+   Time:    1.00 , error p: 5.2272e-07 , error p post: 2.1774e-08 , error v: 6.4454e-07 , solution mag p: 3.5968e-01
+write output for time step 962 at time 1.00
+
+   Performed 962 time steps.
+
+   Average wallclock time per time step: 0.01s, time per element: 0.00s
+   Spent 1.60 s on output   and   5.55 s on computations.
+Computing 984 times:
+   Evaluate     :  1.64e+00 (p   3)  1.67e+00 1.69e+00 (p   0)
+   Inverse mass :  4.33e-01 (p   1)  4.33e-01 4.34e-01 (p   0)
+   ADER CK step :  1.43e+00 (p   1)  1.43e+00 1.43e+00 (p   0)
+   ADER 2nd step:  1.60e+00 (p   0)  1.60e+00 1.60e+00 (p   1)
+   ADER inv mass:  4.25e-01 (p   1)  4.25e-01 4.26e-01 (p   0)
