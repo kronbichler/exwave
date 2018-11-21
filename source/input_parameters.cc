@@ -22,9 +22,14 @@ namespace HDG_WE
   std::vector<Material> input_materials()
   {
     // here, we only have one material...
-    std::vector<Material> mats(1);
+    std::vector<Material> mats(2);
     mats[0].density = 1.0;
     mats[0].speed = 1.0;
+
+
+    mats[1].density = 2.0;
+    mats[1].speed = 2.0;
+
     return mats;
   }
 

@@ -363,7 +363,7 @@ namespace HDG_WE
     DataOut<dim> data_out;
 
     DataOutBase::VtkFlags flags;
-    flags.write_higher_order_cells = true;
+    //flags.write_higher_order_cells = true;
     data_out.set_flags(flags);
 
     data_out.attach_dof_handler (dof_handler);
@@ -395,8 +395,9 @@ namespace HDG_WE
     data_out.add_data_vector (vs, "macrocell_v_index");
 #endif
     data_out.add_data_vector (dof_handler_post_disp, post_pressure, "post_pressure");
-    data_out.build_patches (mapping, parameters.fe_degree, DataOut<dim>::curved_inner_cells);
+    data_out.build_patches (mapping);
 
+// data_out.build_patches (mapping, parameters.fe_degree, DataOut<dim>::curved_inner_cells);
     const std::string filename_pressure =
       "sol_deg" + Utilities::int_to_string(parameters.fe_degree,1)
       + "_" + wave_equation_op->Name()
