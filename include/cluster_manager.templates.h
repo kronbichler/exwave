@@ -115,7 +115,7 @@ namespace HDG_WE
                       for (unsigned int n=0; n<GeometryInfo<dim>::faces_per_cell; ++n)
                         if (cell->neighbor_index(n)>=0)
                           {
-                            if (cell->neighbor(n)->has_children() && !cell->neighbor(n)->is_artificial())
+                            if (cell->neighbor(n)->active() && !cell->neighbor(n)->is_artificial() && cell->neighbor(n)->has_children())
                               {
                                 for (unsigned int subfaces = 0; subfaces < GeometryInfo<dim>::max_children_per_face; ++subfaces)
                                   {
@@ -123,14 +123,14 @@ namespace HDG_WE
                                       is_anyone_faster = true;
                                   }
                               }
-                            else if (temporary_cluster_ids[cell->neighbor(n)->active_cell_index()]<c && !cell->neighbor(n)->is_artificial())
+                            else if (cell->neighbor(n)->active() &&  !cell->neighbor(n)->is_artificial() &&  temporary_cluster_ids[cell->neighbor(n)->active_cell_index()]<c )
                               is_anyone_faster = true;
                           }
                       for (unsigned int n=0; n<GeometryInfo<dim>::faces_per_cell; ++n)
                         {
                           if (cell->neighbor_index(n)>=0)
                             {
-                              if (cell->neighbor(n)->has_children() && !cell->neighbor(n)->is_artificial())
+                              if ( cell->neighbor(n)->active() &&  !cell->neighbor(n)->is_artificial() && cell->neighbor(n)->has_children() )
                                 {
                                   for (unsigned int subfaces = 0; subfaces < GeometryInfo<dim>::max_children_per_face; ++subfaces)
                                     {
@@ -143,7 +143,7 @@ namespace HDG_WE
                                         }
                                     }
                                 }
-                              else if (!cell->neighbor(n)->is_artificial())
+                              else if (cell->neighbor(n)->active() && !cell->neighbor(n)->is_artificial())
                                 {
                                   if (temporary_cluster_ids[cell->neighbor(n)->active_cell_index()]>c)
                                     {
@@ -196,7 +196,7 @@ namespace HDG_WE
                 {
                   if (cell->neighbor_index(n)>=0)
                     {
-                      if (cell->neighbor(n)->has_children() && !cell->neighbor(n)->is_artificial())
+                      if (cell->neighbor(n)->active() &&  !cell->neighbor(n)->is_artificial() &&  cell->neighbor(n)->has_children() )
                         {
                           for (unsigned int subfaces = 0; subfaces < GeometryInfo<dim>::max_children_per_face; ++subfaces)
                             {
@@ -217,7 +217,7 @@ namespace HDG_WE
                                 }
                             }
                         }
-                      else if (!cell->neighbor(n)->is_artificial())
+                      else if (cell->neighbor(n)->active() && !cell->neighbor(n)->is_artificial())
                         {
                           if (temporary_cluster_ids[cell->neighbor(n)->active_cell_index()]<current_c)
                             {
@@ -279,15 +279,14 @@ namespace HDG_WE
     parallel::distributed::Triangulation<dim> *triapll = (dynamic_cast<parallel::distributed::Triangulation<dim>*>
                                                           (const_cast<dealii::Triangulation<dim>*>
                                                            (&tria)));
-
     // setup weights of cells for processors according to clusters
-    triapll->signals.cell_weight.connect([&] (const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
-                                              const typename parallel::distributed::Triangulation<dim>::CellStatus ) -> unsigned int
-    { return (n_clusters-int(element_categories[cell->active_cell_index()]/3)-1)*cluster_diff*1000; });
-
+    // triapll->signals.cell_weight.connect([&] (const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
+    //                                          const typename parallel::distributed::Triangulation<dim>::CellStatus ) -> unsigned int
+    // { return (n_clusters-int(element_categories[cell->active_cell_index()]/3)-1)*cluster_diff*1000; });
+    
     // repartition triangulation
-    triapll->repartition();
-
+    //triapll->repartition();
+    
     // tell all the dof handlers what happened
     for (unsigned int i=0; i<dof_handlers.size(); ++i)
       (const_cast<dealii::DoFHandler<dim> *>(dof_handlers[i]))->distribute_dofs(dof_handlers[i]->get_fe());
@@ -501,7 +500,7 @@ namespace HDG_WE
         for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(e); ++v)
           {
             cell_neighbor_index[n][v][e] = op.get_matrix_free().get_cell_iterator(e,v)->neighbor_index(n);
-            if (cell_neighbor_index[n][v][e] >= 0)
+            if (cell_neighbor_index[n][v][e] >= 0 && op.get_matrix_free().get_cell_iterator(e,v)->neighbor(n)->active() )
               cell_neighbor_active_cell_index[n][v][e] = op.get_matrix_free().get_cell_iterator(e,v)->neighbor(n)->active_cell_index();
           }
 
