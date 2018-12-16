@@ -774,6 +774,7 @@ namespace HDG_WE
     Timer timer;
     double wtime = 0.0;
     double output_time = 0.0;
+    double adapt_time = 0.0;
     while (!time_control.done())
       {
         time_control.advance_time_step();
@@ -784,9 +785,13 @@ namespace HDG_WE
         integrator->perform_time_step(tmp_solutions,solutions,time_control.get_time_step(),*wave_equation_op);
         wtime += timer.wall_time();
 
+        timer.restart();
         if (parameters.n_adaptive_refinements > 0)
           if (time_control.get_step_number() % parameters.adaptive_refinement_interval == 0)
-            adapt_mesh();
+            {
+              adapt_mesh();
+              adapt_time += timer.wall_time();
+            }
 
         timer.restart();
         time_step_analysis(mapping, dof_handler, solutions, time_control.get_time());
@@ -806,6 +811,8 @@ namespace HDG_WE
           << "s" << std::endl;
 
     pcout << "   Spent " << output_time << " s on output";
+    if (adapt_time > 0)
+      pcout << ",  " << Utilities::MPI::max(adapt_time,MPI_COMM_WORLD) << " s on adaptation,";
     pcout << "   and   " << Utilities::MPI::max(wtime,MPI_COMM_WORLD) << " s on computations." << std::endl;
 
   }
