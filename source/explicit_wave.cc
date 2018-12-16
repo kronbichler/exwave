@@ -25,8 +25,6 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/dofs/dof_handler.h>
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/fe_values.h>
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/distributed/tria.h>
@@ -38,20 +36,17 @@
 
 #include <deal.II/grid/tria_accessor.h>
 #include <deal.II/grid/tria_iterator.h>
-#include <deal.II/grid/grid_tools.h>
 #include <deal.II/grid/manifold_lib.h>
 
 #include <deal.II/fe/fe_dgq.h>
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/fe/fe_system.h>
-#include <deal.II/fe/fe_face.h>
 #include <deal.II/numerics/error_estimator.h>
 #include <deal.II/distributed/grid_refinement.h>
 #include <deal.II/grid/grid_refinement.h>
 #include <deal.II/distributed/solution_transfer.h>
 #include <deal.II/numerics/solution_transfer.h>
-#include <deal.II/lac/chunk_sparse_matrix.h>
 
 #include <fstream>
 #include <iostream>
