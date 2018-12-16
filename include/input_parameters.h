@@ -163,7 +163,7 @@ namespace HDG_WE
       {
         const double fact = 255.0;
         if(component == dim)
-          return_value = std::sqrt(2*numbers::PI/(fact*fact*fact)) *
+          return_value = std::sqrt(fact*fact*fact/(8*numbers::PI)) *
                          std::exp(-fact*((p[0]-0.6)*(p[0]-0.6)+(p[1]-0.6)*(p[1]-0.6)+(p[2]-0.6)*(p[2]-0.6)));
         break;
       }
