@@ -105,10 +105,11 @@ namespace HDG_WE
             else
               cell->set_material_id(0);
           }
-        static const SphericalManifold<dim> spherical_manifold;
+        const SphericalManifold<dim> spherical_manifold;
         tria.set_manifold(1, spherical_manifold);
-        tria.set_manifold(0);
-
+        TransfiniteInterpolationManifold<dim> transfinite_manifold;
+        transfinite_manifold.initialize(tria);
+        tria.set_manifold(0, transfinite_manifold);
 
         typename Triangulation<dim>::active_cell_iterator cell = tria.begin_active(),endc = tria.end();
         for (; cell!=endc; ++cell)
@@ -160,9 +161,10 @@ namespace HDG_WE
       }
       case 2:
       {
-        double fact = 55.0;
+        const double fact = 255.0;
         if(component == dim)
-          return_value = std::exp(-fact*((p[0]-0.6)*(p[0]-0.6)+(p[1]-0.6)*(p[1]-0.6)+(p[2]-0.6)*(p[2]-0.6)));
+          return_value = std::sqrt(2*numbers::PI/(fact*fact*fact)) *
+                         std::exp(-fact*((p[0]-0.6)*(p[0]-0.6)+(p[1]-0.6)*(p[1]-0.6)+(p[2]-0.6)*(p[2]-0.6)));
         break;
       }
       default:

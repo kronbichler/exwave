@@ -19,11 +19,11 @@
 # Listing of Parameters
 subsection General
   set dimension = 3
-  set fe_degree = 1
+  set fe_degree = 4
   set n_initial_intervals = 6
   set n_refinements = 3
   set grid_transform_factor = 0.0
-  set n_adaptive_refinements = 1
+  set n_adaptive_refinements = 4
   set adaptive_refinement_interval = 100
 end
 
