@@ -42,6 +42,8 @@
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/fe/fe_system.h>
+#include <deal.II/fe/mapping_fe_field.h>
+#include <deal.II/fe/mapping_q_generic.h>
 #include <deal.II/numerics/error_estimator.h>
 #include <deal.II/distributed/grid_refinement.h>
 #include <deal.II/grid/grid_refinement.h>
@@ -105,6 +107,48 @@ namespace HDG_WE
   };
 
 
+  // class temporarily included here for faster access
+  template <int dim, int spacedim=dim>
+  class MappingQCached : public MappingQGeneric<dim,spacedim>
+  {
+  public:
+    MappingQCached(const unsigned int degree)
+      :
+      MappingQGeneric<dim,spacedim>(degree)
+    {}
+
+    void initialize(const Triangulation<dim,spacedim> &triangulation)
+    {
+      data_cache.resize(triangulation.n_levels());
+      for (unsigned int l=0; l<triangulation.n_levels(); ++l)
+        {
+          data_cache[l].resize(triangulation.n_raw_cells(l));
+          for (auto &cell : triangulation.cell_iterators_on_level(l))
+            if ((cell->active() && !cell->is_artificial())
+                ||
+                (cell->level_subdomain_id() == numbers::invalid_subdomain_id))
+              data_cache[cell->level()][cell->index()] =
+                this->MappingQGeneric<dim,spacedim>::compute_mapping_support_points(cell);
+        }
+    }
+
+    virtual std::vector<Point<spacedim>>
+    compute_mapping_support_points(const typename Triangulation<dim, spacedim>::cell_iterator &cell) const override
+    {
+      AssertIndexRange(static_cast<unsigned int>(cell->level()),
+                       data_cache.size());
+      AssertIndexRange(static_cast<unsigned int>(cell->index()),
+                       data_cache[cell->level()].size());
+      Assert(data_cache[cell->level()][cell->index()].size() ==
+             Utilities::fixed_power<dim>(this->polynomial_degree+1),
+             ExcMessage("Cache on current cell was not initialized."));
+      return data_cache[cell->level()][cell->index()];
+    }
+
+  private:
+    std::vector<std::vector<std::vector<Point<spacedim>>>> data_cache;
+  };
+
 
   // Class WaveEquationProblem as  base class for this setup. It holds all
   // necessary informations like triangulation, dof handler, ...
@@ -136,7 +180,7 @@ namespace HDG_WE
 
     Parameters                    &parameters;
     MyTriangulation<dim>           triangulation;
-    MappingQGeneric<dim>           mapping;
+    MappingQCached<dim>            mapping;
     FESystem<dim>                  fe;
     FE_DGQArbitraryNodes<dim>      fe_spectral, fe_post_disp;
     DoFHandler<dim>                dof_handler, dof_handler_spectral, dof_handler_post_disp;
@@ -204,6 +248,8 @@ namespace HDG_WE
     dof_handler_spectral.distribute_dofs(fe_spectral);
     time.restart();
     dof_handler_post_disp.distribute_dofs(fe_post_disp);
+
+    mapping.initialize(triangulation);
 
     time.restart();
     DoFTools::extract_locally_relevant_dofs(dof_handler, locally_relevant_dofs);
@@ -358,7 +404,7 @@ namespace HDG_WE
     DataOut<dim> data_out;
 
     DataOutBase::VtkFlags flags;
-    //flags.write_higher_order_cells = true;
+    flags.write_higher_order_cells = true;
     data_out.set_flags(flags);
 
     data_out.attach_dof_handler (dof_handler);
@@ -390,9 +436,9 @@ namespace HDG_WE
     data_out.add_data_vector (vs, "macrocell_v_index");
 #endif
     data_out.add_data_vector (dof_handler_post_disp, post_pressure, "post_pressure");
-    data_out.build_patches (mapping);
+    //data_out.build_patches (mapping);
 
-// data_out.build_patches (mapping, parameters.fe_degree, DataOut<dim>::curved_inner_cells);
+    data_out.build_patches (mapping, parameters.fe_degree, DataOut<dim>::curved_inner_cells);
     const std::string filename_pressure =
       "sol_deg" + Utilities::int_to_string(parameters.fe_degree,1)
       + "_" + wave_equation_op->Name()

@@ -199,7 +199,7 @@ namespace HDG_WE
 
   template<int dim, int fe_degree>
   void WaveEquationOperation<dim,fe_degree>::
-  setup(const MappingQGeneric<dim>                 &mapping,
+  setup(const Mapping<dim>                         &mapping,
         const std::vector<const DoFHandler<dim> *> &dof_handlers,
         const std::vector<Material>                &mats,
         const std::vector<unsigned int>            &vectorization_categories)
@@ -265,7 +265,7 @@ namespace HDG_WE
 
   template<int dim, int fe_degree>
   void WaveEquationOperationADER<dim,fe_degree>::
-  setup(const MappingQGeneric<dim>                 &mapping,
+  setup(const Mapping<dim>                         &mapping,
         const std::vector<const DoFHandler<dim> *> &dof_handlers,
         const std::vector<Material>                &mats,
         const std::vector<unsigned int>            &vectorization_categories)
@@ -331,7 +331,7 @@ namespace HDG_WE
 
   template<int dim, int fe_degree>
   void WaveEquationOperationADERADCONFULL<dim,fe_degree>::
-  setup(const MappingQGeneric<dim>                 &mapping,
+  setup(const Mapping<dim>                         &mapping,
         const std::vector<const DoFHandler<dim> *> &dof_handlers,
         const std::vector<Material>                &mats,
         const std::vector<unsigned int>            &vectorization_categories)
@@ -354,7 +354,7 @@ namespace HDG_WE
 
   template<int dim, int fe_degree>
   void WaveEquationOperationADERLTS<dim,fe_degree>::
-  setup(const MappingQGeneric<dim>                 &mapping,
+  setup(const Mapping<dim>                         &mapping,
         const std::vector<const DoFHandler<dim> *> &dof_handlers,
         const std::vector<Material>                &mats,
         const std::vector<unsigned int> &)
@@ -1802,4 +1802,3 @@ namespace HDG_WE
   template class WaveEquationOperationADERADCONFULL<3,12>;
 
 }
-

@@ -58,7 +58,7 @@ namespace HDG_WE
   {
   public:
     typedef double value_type;
-    virtual void setup(const MappingQGeneric<dim>                 &mapping,
+    virtual void setup(const Mapping<dim>                         &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
                        const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>()) = 0;
@@ -114,7 +114,7 @@ namespace HDG_WE
     // Destructor
     virtual ~WaveEquationOperation();
 
-    virtual void setup(const MappingQGeneric<dim>                 &mapping,
+    virtual void setup(const Mapping<dim>                         &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
                        const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
@@ -233,7 +233,7 @@ namespace HDG_WE
 
     virtual ~WaveEquationOperationADER();
 
-    virtual void setup(const MappingQGeneric<dim>                 &mapping,
+    virtual void setup(const Mapping<dim>                         &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
                        const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
@@ -302,7 +302,7 @@ namespace HDG_WE
 
     WaveEquationOperationADERADCONFULL(TimeControl &time_control_in, Parameters &parameters_in);
 
-    virtual void setup(const MappingQGeneric<dim>                 &mapping,
+    virtual void setup(const Mapping<dim>                         &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
                        const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
@@ -330,7 +330,7 @@ namespace HDG_WE
 
     WaveEquationOperationADERLTS(TimeControl &time_control_in, Parameters &parameters_in);
 
-    virtual void setup(const MappingQGeneric<dim>                 &mapping,
+    virtual void setup(const Mapping<dim>                         &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
                        const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
