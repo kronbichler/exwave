@@ -123,6 +123,7 @@ namespace HDG_WE
         Assert(false,ExcNotImplemented());
       }
     tria.refine_global(parameters.n_refinements);
+    tria.set_manifold(0, FlatManifold<dim>());
   }
 
 
@@ -161,9 +162,9 @@ namespace HDG_WE
       }
       case 2:
       {
-        const double fact = 255.0;
+        const double fact = 500.0;
         if(component == dim)
-          return_value = std::sqrt(fact*fact*fact/(8*numbers::PI)) *
+          return_value = std::sqrt(fact*fact*fact/(8*numbers::PI*numbers::PI*numbers::PI)) *
                          std::exp(-fact*((p[0]-0.6)*(p[0]-0.6)+(p[1]-0.6)*(p[1]-0.6)+(p[2]-0.6)*(p[2]-0.6)));
         break;
       }
