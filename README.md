@@ -87,18 +87,39 @@ Runge-Kutta stage.
 
 # Literature 
 
+The software design of ExWave is described in the following paper:
+```
+@article{schoeder19exwave,
+author = {Schoeder, S. and Wall, W.A. and Kronbichler, M.},
+title = {A high performance discontinuous {G}alerkin solver for the acoustic wave equation},
+journal = {Software X},
+volume = {9},
+pages = {49-54},
+year = {2019},
+doi = {10.1016/j.softx.2019.01.001}
+}
+```
 The following articles provide background information on explicit time integration for the
 acoustic wave equation with Runge-Kutta or arbitrary derivative time integation as well as
 for matrix-free methods with sum factorization techniques.
 ```
-@article{skw17,
+@article{schoeder18efficiency,
+author = {Schoeder, S. and Kormann, K. and Wall, W.A. and Kronbichler, M.},
+title = {Efficient explicit time stepping of high order discontinuous {G}alerkin schemes for waves},
+journal = {SIAM Journal on Scientific Computing},
+volume = {40},
+number = 6
+pages = {C803-C826},
+year = {2018},
+doi = {10.1137/18M1185399}
+}
+@article{schoeder18ader,
 author = {Schoeder, S. and Kronbichler, M. and Wall, W.A.},
 title = {Arbitrary High-Order Explicit Hybridizable Discontinuous
-{G}alerkin Methods for the Acoustic Wave Equation},
-journal = {J. Sci. Comput.},
-volume = {online first},
-number = {},
-pages = {1-38},
+         {G}alerkin Methods for the Acoustic Wave Equation},
+journal = {Journal of Scientific Computing},
+volume = {76},
+pages = {969-1007},
 year = {2018},
 doi = {10.1007/s10915-018-0649-2},
 }
@@ -112,7 +133,7 @@ year = {2017}
 @article{kk12,
 author = "Kronbichler, M. and Kormann, K.",
 title  = "A generic interface for parallel cell-based finite element operator application",
-journal = "Comput. \& Fluids",
+journal = "Computers \& Fluids",
 volume  = 63,
 pages   = "135--147",
 year    = 2012,
@@ -120,8 +141,9 @@ doi     = "10.1016/j.compfluid.2012.04.012"
 }
 @article{ksmw15,
 author = {Kronbichler, M. and Schoeder, S. and M\"uller, C. and Wall, W.A.},
-title = {Comparison of implicit and explicit hybridizable discontinuous {G}alerkin methods for the acoustic wave equation},
-journal = {Internat. J. Numer. Methods Engrg.},
+title = {Comparison of implicit and explicit hybridizable discontinuous {G}alerkin 
+         methods for the acoustic wave equation},
+journal = {International Journal of Numerical Methods in Engineering},
 volume = {106},
 number = {9},
 pages = {712--739},
