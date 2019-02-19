@@ -8,8 +8,7 @@ such as parallel adaptive mesh refinementand  fast integration based on sum fact
 
 # Performance
 
-The performance of ExWave is described in the publication arxiv.org/abs/1805.03981.
-[DOI](https://arxiv.org/abs/1805.03981)
+The performance of ExWave is described in [this publication](https://dx.doi.org/10.1137/18M1185399)
 ```
 @article{schoeder18efficiency,
 author = {Schoeder, S. and Kormann, K. and Wall, W.A. and Kronbichler, M.},
