@@ -11,12 +11,15 @@ such as parallel adaptive mesh refinementand  fast integration based on sum fact
 The performance of ExWave is described in the publication arxiv.org/abs/1805.03981.
 [DOI](https://arxiv.org/abs/1805.03981)
 ```
-@article{skwk18,
-title = {Efficient explicit time stepping of high order discontinous {G}alerkin schemes for waves},
+@article{schoeder18efficiency,
 author = {Schoeder, S. and Kormann, K. and Wall, W.A. and Kronbichler, M.},
-journal = {arXiv preprint \url{http://arxiv.org/abs/1805.03981}},
-volume = {v1},
-year = {2018}
+title = {Efficient explicit time stepping of high order discontinuous {G}alerkin schemes for waves},
+journal = {SIAM Journal on Scientific Computing},
+volume = {40},
+number = 6
+pages = {C803-C826},
+year = {2018},
+doi = {10.1137/18M1185399}
 }
 ```
 
@@ -103,16 +106,6 @@ The following articles provide background information on explicit time integrati
 acoustic wave equation with Runge-Kutta or arbitrary derivative time integation as well as
 for matrix-free methods with sum factorization techniques.
 ```
-@article{schoeder18efficiency,
-author = {Schoeder, S. and Kormann, K. and Wall, W.A. and Kronbichler, M.},
-title = {Efficient explicit time stepping of high order discontinuous {G}alerkin schemes for waves},
-journal = {SIAM Journal on Scientific Computing},
-volume = {40},
-number = 6
-pages = {C803-C826},
-year = {2018},
-doi = {10.1137/18M1185399}
-}
 @article{schoeder18ader,
 author = {Schoeder, S. and Kronbichler, M. and Wall, W.A.},
 title = {Arbitrary High-Order Explicit Hybridizable Discontinuous
