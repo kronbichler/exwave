@@ -26,17 +26,18 @@ doi = {10.1137/18M1185399}
 
 ### Configuration of deal.II
 
-The deal.II library is a prerequisite for ExWave. In a first step, deal.II must be
-downloaded and configured following the instructions supplied by the deal.II documentation.
-It is important, however, to build deal.II with support of HDF5, P4EST, and MPI. Therefore,
-the following command should be used for cmake:
+The deal.II library, version 9.1 or higher, is a prerequisite for ExWave. In a first step,
+deal.II must be downloaded and configured following the instructions supplied by the deal.II
+documentation. For ExWave, deal.II must be built with support of HDF5, P4EST, and MPI. For
+example, the following cmake invocation can be used:
 ```
-cmake -DP4EST_DIR=/path/to/p4est -DDEAL_II_WITH_P4EST=ON -DDEAL_II_WITH_MPI=ON -D HDF5_DIR=/path/to/hdf5 -DCMAKE_INSTALL_PREFIX=/path/to/install path/to/source
+cmake -DP4EST_DIR=/path/to/p4est -DDEAL_II_WITH_P4EST=ON -DDEAL_II_WITH_MPI=ON \
+      -D HDF5_DIR=/path/to/hdf5 -DCMAKE_INSTALL_PREFIX=/path/to/install path/to/source
 ```
 
 ### Configuration of ExWave
 
-After setting up deal.II, ExWave is build in its directory by running
+After setting up deal.II, ExWave is built (e.g. in-source) by running
 ```
 cmake -DDEAL_II_DIR=/path/to/dealii/build .
 ```
@@ -44,13 +45,17 @@ followed by
 ```
 make
 ```
-and one can choose to make the release or the debug version. Tests of the code are run by
-executing
+The project is set up similarly to deal.II tutorial programs, which enables additional options
+such as switching between the debug (slow, with many checks) and release version (fast, for 
+production runs) of ExWave, depending on the built options used for deal.II.
+
+ExWave comes with a set of regression tests that monitor the convergence of the solver. The tests
+are run by executing
 ```
 ctest
 ```
 
-Simulations are then run by calling
+Simulations are run by calling
 ```
 ./explicit_wave [optional_parameter_file.prm]
 ```
@@ -115,14 +120,17 @@ pages = {969-1007},
 year = {2018},
 doi = {10.1007/s10915-018-0649-2},
 }
-@article{kk17,
+
+@article{kronbichler19mf,
 title = {Fast matrix-free evaluation of discontinuous {G}alerkin finite element operators},
-author = {M. Kronbichler and K. Kormann},
-journal = {arXiv preprint \url{http://arxiv.org/abs/1711.03590}},
-volume = {v1},
-year = {2017}
+author = {Kronbichler, M. and Kormann, K.},
+journal = {ACM Transactions on Mathematical Software},
+volume = {in press},
+year = {2019},
+doi = {10.1145/3325864}
 }
-@article{kk12,
+
+@article{kronbichler12mf,
 author = "Kronbichler, M. and Kormann, K.",
 title  = "A generic interface for parallel cell-based finite element operator application",
 journal = "Computers \& Fluids",
@@ -131,7 +139,8 @@ pages   = "135--147",
 year    = 2012,
 doi     = "10.1016/j.compfluid.2012.04.012"
 }
-@article{ksmw15,
+
+@article{kronbichler16comparison,
 author = {Kronbichler, M. and Schoeder, S. and M\"uller, C. and Wall, W.A.},
 title = {Comparison of implicit and explicit hybridizable discontinuous {G}alerkin 
          methods for the acoustic wave equation},
