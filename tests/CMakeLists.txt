@@ -36,7 +36,7 @@ ENDFUNCTION()
 #time limit of 10 minutes per test
 SET_IF_EMPTY(TEST_TIME_LIMIT 600)
 
-############################3
+############################
 
 ADD_CUSTOM_TARGET(tests)
 
@@ -86,18 +86,13 @@ FOREACH(_test ${_tests})
 
   ADD_CUSTOM_TARGET(tests.${_test})
 
-  # create the output.notime target, and also create a similar file for the
-  # screen output. the test_name.output files are typically copied directly
-  # from a run but the timer information is obviously not reproducible and
-  # needs to be stripped out. This is done by the two egrep commands, one
-  # for the final timer output and the second for the in-code statistics
-  # that might be present, respectively. The two lines involving sed are
-  # used to process output like [12.3/7] (which is a typical solver output
-  # of a residual and the linear iterations) where we want to insert a bit
-  # of whitespace around the residual in order to enable numdiff to identify
-  # that as numbers and apply the round-off rules, and we want to eliminate
-  # the iteration count because that can be slightly different (+- 2
-  # iterations) on different systems
+  # create the output.notime target, and also create a similar file
+  # for the screen output. the test_name.output files are copied
+  # directly from a run but the timer information and memory
+  # consumption are not reproducible and need to be stripped out. we
+  # only keep track of the lines which contain the term 'error'
+  # printed during the program execution, which can then be compared
+  # to a reference data set.
   #
   # we then do the same thing also for the screen out
   ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.cmp.notime
