@@ -23,24 +23,25 @@ subsection TimeDiscretization
   set final_time = 1.0
   set output_every_time = 0.1
   set cfl_stability_analysis = false
+
+  # ADER specific input parameters
+  subsection ADER
+    set use_ader_post = false
+    set spectral_evaluation = true
+  end
+
+  # ADER LTS specific input parameters
+  subsection ADERLTS
+    set max_n_clusters = 1
+    set max_diff_clusters = 1
+  end
+
 end
 
 # The initial field
 subsection InitialField
   set initital_cases = 1
   set membrane_modes = 3
-end
-
-# ADER specific input parameters
-subsection ADER_TimeIntegration
-  set use_ader_post = false
-  set spectral_evaluation = true
-end
-
-# ADER LTS specific input parameters
-subsection ADERLTS_TimeIntegration
-  set max_n_clusters = 1
-  set max_diff_clusters = 1
 end
 
 # Misc

@@ -1,15 +1,15 @@
 
-deal.II git version a5cffe1 on branch master
+deal.II git version 777cf92 on branch dealii-9.1
 Number of MPI ranks:         2
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
 
 Number of global active cells: 400
-   Memory stats [MB]: 47 47.5 48
+   Memory stats [MB]: 113 114.5 116
 Time step size: 0.002079
 
 Number of degrees of freedom DG system: 19200
-   Memory stats [MB]: 51 51.5 52
-   Time vectors: 0.000198873
-
+   Memory stats [MB]: 117 118.5 120
+   Time vectors: 0.000236188
    Time step size: 0.00207988
    Time:    0.00 , error p: 9.4185e-06 , error p post: 9.0845e-06 , error v: 0.0000e+00 , solution mag p: 5.0000e-01
 write output for time step 0 at time 0.00
@@ -36,11 +36,10 @@ write output for time step 481 at time 1.00
 
    Performed 481 time steps.
    Average wallclock time per time step: 0.00s, time per element: 0.00s
-
-   Spent 0.52 s on output   and   0.78 s on computations.
-Computing 503 times:
-   Evaluate     :  2.41e-01 (p   1)  2.42e-01 2.42e-01 (p   0)
-   Inverse mass :  6.11e-02 (p   0)  6.12e-02 6.12e-02 (p   1)
-   ADER CK step :  1.93e-01 (p   0)  1.93e-01 1.93e-01 (p   1)
-   ADER 2nd step:  2.30e-01 (p   1)  2.30e-01 2.30e-01 (p   0)
-   ADER inv mass:  5.87e-02 (p   1)  5.87e-02 5.87e-02 (p   0)
+   Spent 0.16 s on output   and   0.25 s on computations.
+Computing 492 times:
+   Evaluate     :  6.98e-02 (p   0)  7.01e-02 7.04e-02 (p   1)
+   Inverse mass :  2.49e-02 (p   1)  2.51e-02 2.54e-02 (p   0)
+   ADER CK step :  6.14e-02 (p   0)  6.16e-02 6.18e-02 (p   1)
+   ADER 2nd step:  6.61e-02 (p   1)  6.61e-02 6.62e-02 (p   0)
+   ADER inv mass:  2.43e-02 (p   1)  2.44e-02 2.44e-02 (p   0)

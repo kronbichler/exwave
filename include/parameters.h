@@ -71,6 +71,7 @@ public:
   unsigned int        max_time_steps;
   double              final_time;
   double              output_every_time;
+  bool                write_vtu_output;
   bool                cfl_stability_analysis;
 
   // initial field

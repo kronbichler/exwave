@@ -336,100 +336,103 @@ namespace HDG_WE
   WaveEquationProblem<dim>::output_results ()
   {
 
-
-    Vector<double> procs(triangulation.n_active_cells()),
-           clusterids(triangulation.n_active_cells()),
-           timestepsizes(triangulation.n_active_cells()),
-           is(triangulation.n_active_cells()),
-           vs(triangulation.n_active_cells());
-    for (unsigned int i=0; i<wave_equation_op->get_matrix_free().n_macro_cells(); ++i)
-      for (unsigned int v=0; v<wave_equation_op->get_matrix_free().n_components_filled(i); ++v)
-        {
-          typename Triangulation<dim>::cell_iterator cell = wave_equation_op->get_matrix_free().get_cell_iterator(i, v);
-          procs(cell->active_cell_index()) = Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
-          clusterids(cell->active_cell_index()) = wave_equation_op->cluster_id(i)+1.0;
-          timestepsizes(cell->active_cell_index()) = wave_equation_op->time_step(i);
-          is(cell->active_cell_index()) = i;
-          vs(cell->active_cell_index()) = v;
-        }
-
-
-
-    DataOut<dim> data_out;
-
-    DataOutBase::VtkFlags flags;
-    flags.write_higher_order_cells = true;
-    data_out.set_flags(flags);
-
-    data_out.attach_dof_handler (dof_handler);
-    std::vector<std::string> solution_names;
-    for (unsigned int d=0; d<dim; ++d)
-      solution_names.push_back("solution_velocity");
-    solution_names.push_back("solution_pressure");
-    std::vector<DataComponentInterpretation::DataComponentInterpretation> interpretation(dim, DataComponentInterpretation::component_is_part_of_vector);
-    interpretation.push_back(DataComponentInterpretation::component_is_scalar);
-    data_out.add_data_vector (dof_handler, solutions, solution_names, interpretation);
-    LinearAlgebra::distributed::Vector<value_type> vec(solutions);
-    wave_equation_op->project_initial_field(vec, ExactSolution<dim> (dim+1, -1, time_control.get_time(),parameters.initial_cases,parameters.membrane_modes));
-    vec -= solutions;
-    for (unsigned int d=0; d<dim; ++d)
-      solution_names[d] = "error_velocity";
-    solution_names[dim] = "error_pressure";
-    data_out.add_data_vector (dof_handler, vec, solution_names, interpretation);
-    Vector<double> error_estimate(triangulation.n_active_cells());
-    wave_equation_op->estimate_error(solutions, tmp_solutions, error_estimate);
-    data_out.add_data_vector (error_estimate, "Error_estimate");
-    if (parameters.integ_type == IntegratorType::ader_lts)
+    if (parameters.write_vtu_output)
       {
-        data_out.add_data_vector (clusterids, "cluster_id");
-        data_out.add_data_vector (timestepsizes, "time_step");
-      }
+	Vector<double> procs(triangulation.n_active_cells()),
+	  clusterids(triangulation.n_active_cells()),
+	  timestepsizes(triangulation.n_active_cells()),
+	  is(triangulation.n_active_cells()),
+	  vs(triangulation.n_active_cells());
+	for (unsigned int i=0; i<wave_equation_op->get_matrix_free().n_macro_cells(); ++i)
+	  for (unsigned int v=0; v<wave_equation_op->get_matrix_free().n_components_filled(i); ++v)
+	    {
+	      typename Triangulation<dim>::cell_iterator cell = wave_equation_op->get_matrix_free().get_cell_iterator(i, v);
+	      procs(cell->active_cell_index()) = Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
+	      clusterids(cell->active_cell_index()) = wave_equation_op->cluster_id(i)+1.0;
+	      timestepsizes(cell->active_cell_index()) = wave_equation_op->time_step(i);
+	      is(cell->active_cell_index()) = i;
+	      vs(cell->active_cell_index()) = v;
+	    }
+
+
+
+	DataOut<dim> data_out;
+
+	DataOutBase::VtkFlags flags;
+	flags.write_higher_order_cells = true;
+	data_out.set_flags(flags);
+
+	data_out.attach_dof_handler (dof_handler);
+	std::vector<std::string> solution_names;
+	for (unsigned int d=0; d<dim; ++d)
+	  solution_names.push_back("solution_velocity");
+	solution_names.push_back("solution_pressure");
+	std::vector<DataComponentInterpretation::DataComponentInterpretation> interpretation(dim, DataComponentInterpretation::component_is_part_of_vector);
+	interpretation.push_back(DataComponentInterpretation::component_is_scalar);
+	data_out.add_data_vector (dof_handler, solutions, solution_names, interpretation);
+	LinearAlgebra::distributed::Vector<value_type> vec(solutions);
+	wave_equation_op->project_initial_field(vec, ExactSolution<dim> (dim+1, -1, time_control.get_time(),parameters.initial_cases,parameters.membrane_modes));
+	vec -= solutions;
+	for (unsigned int d=0; d<dim; ++d)
+	  solution_names[d] = "error_velocity";
+	solution_names[dim] = "error_pressure";
+	data_out.add_data_vector (dof_handler, vec, solution_names, interpretation);
+	Vector<double> error_estimate(triangulation.n_active_cells());
+	wave_equation_op->estimate_error(solutions, tmp_solutions, error_estimate);
+	data_out.add_data_vector (error_estimate, "Error_estimate");
+	if (parameters.integ_type == IntegratorType::ader_lts)
+	  {
+	    data_out.add_data_vector (clusterids, "cluster_id");
+	    data_out.add_data_vector (timestepsizes, "time_step");
+	  }
 #ifdef DEBUG
-    data_out.add_data_vector (procs, "MPI_Proc_id");
-    data_out.add_data_vector (is, "macrocell_i_index");
-    data_out.add_data_vector (vs, "macrocell_v_index");
+	data_out.add_data_vector (procs, "MPI_Proc_id");
+	data_out.add_data_vector (is, "macrocell_i_index");
+	data_out.add_data_vector (vs, "macrocell_v_index");
 #endif
-    data_out.add_data_vector (dof_handler_post_disp, post_pressure, "post_pressure");
-    data_out.build_patches (mapping, parameters.fe_degree, DataOut<dim>::curved_inner_cells);
+	data_out.add_data_vector (dof_handler_post_disp, post_pressure, "post_pressure");
+	data_out.build_patches (mapping, parameters.fe_degree, DataOut<dim>::curved_inner_cells);
 
-    const std::string filename_pressure =
-      "sol_deg" + Utilities::int_to_string(parameters.fe_degree,1)
-      + "_" + wave_equation_op->Name()
-      + "_case" + Utilities::int_to_string(parameters.initial_cases,1)
-      + "_ref" +Utilities::int_to_string(parameters.n_refinements,1)
-      + "_step" + Utilities::int_to_string (time_control.get_output_step_number(), 3);
+	const std::string filename_pressure =
+	  "sol_deg" + Utilities::int_to_string(parameters.fe_degree,1)
+	  + "_" + wave_equation_op->Name()
+	  + "_case" + Utilities::int_to_string(parameters.initial_cases,1)
+	  + "_ref" +Utilities::int_to_string(parameters.n_refinements,1)
+	  + "_step" + Utilities::int_to_string (time_control.get_output_step_number(), 3);
 
-    {
-      std::ostringstream filename;
-      filename << "output/"
-               << filename_pressure;
-      if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) > 1)
-        filename << "_Proc"
-                 << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
-      filename << ".vtu";
+	{
+	  std::ostringstream filename;
+	  filename << "output/"
+		   << filename_pressure;
+	  if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) > 1)
+	    filename << "_Proc"
+		     << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
+	  filename << ".vtu";
 
-      std::ofstream output_pressure (filename.str().c_str());
-      data_out.write_vtu (output_pressure);
-    }
+	  std::ofstream output_pressure (filename.str().c_str());
+	  data_out.write_vtu (output_pressure);
+	}
 
 
-    if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) > 1 &&
-        Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
-      {
-        std::vector<std::string> filenames;
-        for (unsigned int i=0; i<Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD); ++i)
-          {
-            std::ostringstream filename;
-            filename << filename_pressure
-                     << "_Proc"
-                     << i
-                     << ".vtu";
+	if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) > 1 &&
+	    Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+	  {
+	    std::vector<std::string> filenames;
+	    for (unsigned int i=0; i<Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD); ++i)
+	      {
+		std::ostringstream filename;
+		filename << filename_pressure
+			 << "_Proc"
+			 << i
+			 << ".vtu";
 
-            filenames.push_back(filename.str().c_str());
-          }
-        std::string master_name = "output/" + filename_pressure + ".pvtu";
-        std::ofstream master_output (master_name.c_str());
-        data_out.write_pvtu_record (master_output, filenames);
+		filenames.push_back(filename.str().c_str());
+	      }
+	    std::string master_name = "output/" + filename_pressure + ".pvtu";
+	    std::ofstream master_output (master_name.c_str());
+	    data_out.write_pvtu_record (master_output, filenames);
+	  }
+
       }
 
 
@@ -903,7 +906,27 @@ int main (int argc, char **argv)
                     << DEAL_II_GIT_BRANCH << std::endl;
           std::cout << "Number of MPI ranks:         "
                     << Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD)
-                    << std::endl << std::endl;
+                    << std::endl;
+
+	  const unsigned int n_vect_doubles = VectorizedArray<double>::n_array_elements;
+	  const unsigned int n_vect_bits = 8*sizeof(double)*n_vect_doubles;
+
+	  std::cout << "Vectorization over " << n_vect_doubles
+		    << " doubles = " << n_vect_bits << " bits (";
+
+	  if (n_vect_bits==64)
+	    std::cout << "disabled";
+	  else if (n_vect_bits==128)
+	    std::cout << "SSE2";
+	  else if (n_vect_bits==256)
+	    std::cout << "AVX";
+	  else if (n_vect_bits==512)
+	    std::cout << "AVX512";
+	  else
+	    std::cout << "unknown";
+
+	  std::cout << "), VECTORIZATION_LEVEL=" << DEAL_II_COMPILER_VECTORIZATION_LEVEL
+		    << std::endl << std::endl;
         }
 
       deallog.depth_console (0);

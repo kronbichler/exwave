@@ -18,10 +18,10 @@
 # --------------------------------------------------------------------------
 # Listing of Parameters
 subsection General
-  set dimension = 2
-  set fe_degree = 4
+  set dimension = 3
+  set fe_degree = 6
   set n_initial_intervals = 5
-  set n_refinements = 2
+  set n_refinements = 3
   set grid_transform_factor = 0.1
   set n_adaptive_refinements = 0
   set adaptive_refinement_interval = 100
@@ -29,26 +29,27 @@ end
 
 subsection TimeDiscretization
   set time_integrator = ADER
-  set cfl_number = 0.3
+  set cfl_number = 0.17
   set max_time_steps = 1000000
   set final_time = 1
   set output_every_time = 0.1
+  set write_vtu_output = false
   set cfl_stability_analysis = false
+
+  subsection ADER
+    set use_ader_post = true
+    set spectral_evaluation = true
+  end
+
+  subsection ADERLTS
+    set max_n_clusters = 10
+    set max_diff_clusters = 7
+  end
 end
 
 subsection InitialField
   set initital_cases = 1
   set membrane_modes = 7
-end
-
-subsection ADER_TimeIntegration
-  set use_ader_post = true
-  set spectral_evaluation = true
-end
-
-subsection ADERLTS_TimeIntegration
-  set max_n_clusters = 10
-  set max_diff_clusters = 7
 end
 
 subsection Miscellaneous

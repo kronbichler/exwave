@@ -31,18 +31,6 @@ subsection InitialField
   set membrane_modes = 8
 end
 
-# ADER specific input parameters
-subsection ADER_TimeIntegration
-  set use_ader_post = false
-  set spectral_evaluation = true
-end
-
-# ADER LTS specific input parameters
-subsection ADERLTS_TimeIntegration
-  set max_n_clusters = 1
-  set max_diff_clusters = 1
-end
-
 # Misc
 subsection Miscellaneous
   set output_parameters = false

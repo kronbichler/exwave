@@ -65,8 +65,25 @@ void Parameters::declare_parameters (ParameterHandler &prm)
                      "Maximal time.");
   prm.declare_entry ("output_every_time","0.1",Patterns::Double(),
                      "Output time step.");
+  prm.declare_entry ("write_vtu_output","false",Patterns::Bool(),
+                     "Write VTU output.");
   prm.declare_entry ("cfl_stability_analysis","false",Patterns::Bool(),
                      "Run of a time step stability analysis.");
+
+  prm.enter_subsection ("ADER");
+  prm.declare_entry ("use_ader_post","false",Patterns::Bool(),
+                     "Use of ADER Reconstruction for superconvergence.");
+  prm.declare_entry ("spectral_evaluation","true",Patterns::Bool(),
+                     "Spectral evaluation of Taylor-Cauchy-Kowalevski procedure.");
+  prm.leave_subsection();
+
+  prm.enter_subsection ("ADERLTS");
+  prm.declare_entry ("max_n_clusters","10",Patterns::Integer(),
+                     "Number of allowed time step clusters.");
+  prm.declare_entry ("max_diff_clusters","7",Patterns::Integer(),
+                     "Allowed time step difference between clusters.");
+  prm.leave_subsection();
+
   prm.leave_subsection();
 
   prm.enter_subsection ("InitialField");
@@ -74,20 +91,6 @@ void Parameters::declare_parameters (ParameterHandler &prm)
                      "Initial case.");
   prm.declare_entry ("membrane_modes","2",Patterns::Integer(),
                      "Membrane modes in analytic solution.");
-  prm.leave_subsection();
-
-  prm.enter_subsection ("ADER_TimeIntegration");
-  prm.declare_entry ("use_ader_post","false",Patterns::Bool(),
-                     "Use of ADER Reconstruction for superconvergence.");
-  prm.declare_entry ("spectral_evaluation","true",Patterns::Bool(),
-                     "Spectral evaluation of Taylor-Cauchy-Kowalevski procedure.");
-  prm.leave_subsection();
-
-  prm.enter_subsection ("ADERLTS_TimeIntegration");
-  prm.declare_entry ("max_n_clusters","10",Patterns::Integer(),
-                     "Number of allowed time step clusters.");
-  prm.declare_entry ("max_diff_clusters","7",Patterns::Integer(),
-                     "Allowed time step difference between clusters.");
   prm.leave_subsection();
 
   prm.enter_subsection ("Miscellaneous");
@@ -141,6 +144,7 @@ void Parameters::parse_parameters (const std::string parameter_file,
   grid_transform_factor = prm.get_double ("grid_transform_factor");
 
   prm.leave_subsection ();
+
   prm.enter_subsection("TimeDiscretization");
 
   std::string timestring = prm.get("time_integrator");
@@ -192,27 +196,31 @@ void Parameters::parse_parameters (const std::string parameter_file,
   max_time_steps = prm.get_integer("max_time_steps");
   final_time = prm.get_double("final_time");
   output_every_time = prm.get_double("output_every_time");
+  write_vtu_output = prm.get_bool("write_vtu_output");
   cfl_stability_analysis = prm.get_bool("cfl_stability_analysis");
 
+  prm.enter_subsection ("ADER");
+
+  use_ader_post = prm.get_bool ("use_ader_post");
+  spectral_evaluation  = prm.get_bool ("spectral_evaluation");
+
   prm.leave_subsection();
+  prm.enter_subsection ("ADERLTS");
+
+  max_n_clusters = prm.get_integer ("max_n_clusters");
+  max_diff_clusters = prm.get_integer ("max_diff_clusters");
+
+  prm.leave_subsection();
+
+  prm.leave_subsection(); // time integration
+
   prm.enter_subsection ("InitialField");
 
   initial_cases = prm.get_integer ("initital_cases");
   membrane_modes = prm.get_integer ("membrane_modes");
 
   prm.leave_subsection();
-  prm.enter_subsection ("ADER_TimeIntegration");
 
-  use_ader_post = prm.get_bool ("use_ader_post");
-  spectral_evaluation  = prm.get_bool ("spectral_evaluation");
-
-  prm.leave_subsection();
-  prm.enter_subsection ("ADERLTS_TimeIntegration");
-
-  max_n_clusters = prm.get_integer ("max_n_clusters");
-  max_diff_clusters = prm.get_integer ("max_diff_clusters");
-
-  prm.leave_subsection();
   prm.enter_subsection ("Miscellaneous");
 
   output_of_parameters = prm.get_bool ("output_parameters");

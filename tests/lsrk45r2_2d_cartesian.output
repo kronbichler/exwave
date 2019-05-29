@@ -1,15 +1,15 @@
 
-deal.II git version a5cffe1 on branch master
+deal.II git version 777cf92 on branch dealii-9.1
 Number of MPI ranks:         4
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
 
 Number of global active cells: 400
-   Memory stats [MB]: 47 47.25 48
+   Memory stats [MB]: 113 113 113
 Time step size: 0.0149254
 
 Number of degrees of freedom DG system: 4800
-   Memory stats [MB]: 50 50 50
-   Time vectors: 0.000111138
-
+   Memory stats [MB]: 115 115 115
+   Time vectors: 0.000149191
    Time step size: 0.015
    Time:    0.00 , error p: 4.1022e-02 , error p post: 3.7709e-02 , error v: 0.0000e+00 , solution mag p: 5.0000e-01
 write output for time step 0 at time 0.00
@@ -36,8 +36,7 @@ write output for time step 67 at time 1.00
 
    Performed 67 time steps.
    Average wallclock time per time step: 0.00s, time per element: 0.00s
-
-   Spent 0.11 s on output   and   0.07 s on computations.
-Computing 357 times:
-   Evaluate     :  5.67e-02 (p   0)  5.71e-02 5.75e-02 (p   1)
-   Inverse mass :  1.13e-02 (p   0)  1.14e-02 1.14e-02 (p   3)
+   Spent 0.04 s on output   and   0.02 s on computations.
+Computing 346 times:
+   Evaluate     :  1.49e-02 (p   0)  1.50e-02 1.52e-02 (p   2)
+   Inverse mass :  2.63e-03 (p   0)  2.65e-03 2.68e-03 (p   1)
