@@ -17,6 +17,7 @@
 
 #include "../include/time_integrators.h"
 #include "../include/wave_equation_operations.h"
+#include "../include/linearized_euler_operations.h"
 
 
 DEAL_II_NAMESPACE_OPEN
@@ -884,6 +885,21 @@ template class LowStorageRK59Reg2<dealii::LinearAlgebra::distributed::Vector<dou
 template class LowStorageRK59Reg2<dealii::LinearAlgebra::distributed::Vector<double>, HDG_WE::WaveEquationOperationBase<3> >;
 template class SSPRK<dealii::LinearAlgebra::distributed::Vector<double>, HDG_WE::WaveEquationOperationBase<2> >;
 template class SSPRK<dealii::LinearAlgebra::distributed::Vector<double>, HDG_WE::WaveEquationOperationBase<3> >;
+
+template class ExplicitEuler<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class ExplicitEuler<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
+template class ClassRK4<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class ClassRK4<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
+template class LowStorageRK33Reg2<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class LowStorageRK33Reg2<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
+template class LowStorageRK45Reg2<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class LowStorageRK45Reg2<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
+template class LowStorageRK45Reg3<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class LowStorageRK45Reg3<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
+template class LowStorageRK59Reg2<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class LowStorageRK59Reg2<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
+template class SSPRK<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<2> >;
+template class SSPRK<dealii::LinearAlgebra::distributed::Vector<double>, DG_Euler::LinearizedEulerOperationBase<3> >;
 
 DEAL_II_NAMESPACE_CLOSE
 

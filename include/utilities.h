@@ -140,7 +140,68 @@ namespace HDG_WE
                           const double           )
   {
   }
+}
 
+
+namespace DG_Euler
+{
+  // Definition of an ExactSolution to specify pressure and velocity
+  // components: dependent on the specified case, corresponding values are
+  // returned
+  template <int dim>
+  class ExactSolution : public dealii::Function<dim>
+  {
+  public:
+    ExactSolution (const double time,
+                   const int initial_cases,
+                   const int membrane_modes) : dealii::Function<dim>(dim+2, time),
+      initial_cases(initial_cases),
+      membrane_modes(membrane_modes)
+    {}
+
+    virtual double value (const dealii::Point<dim> &p ,
+                          const unsigned int  component=0) const
+    {
+      (void)p;
+      (void)component;
+      if (component == 0)
+        return 1;
+      else
+        return 0;
+    }
+
+  private:
+    const int initial_cases;
+    const int membrane_modes;
+  };
+
+
+
+  template <int dim>
+  class ExactSolutionTimeDerivative : public dealii::Function<dim>
+  {
+  public:
+    ExactSolutionTimeDerivative (const double time,
+                                 const int initial_cases,
+                                 const int membrane_modes) : dealii::Function<dim>(dim+2, time),
+      component(component),
+      initial_cases(initial_cases),
+      membrane_modes(membrane_modes)
+    {}
+
+    virtual double value (const dealii::Point<dim> &p ,
+                          const unsigned int component=0) const
+    {
+      (void)p;
+      (void)component;
+      return 0;
+    }
+
+  private:
+    const int component;
+    const int initial_cases;
+    const int membrane_modes;
+  };
 }
 
 #endif

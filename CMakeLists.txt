@@ -17,10 +17,19 @@
 file(MAKE_DIRECTORY output)
 
 # Set the name of the project and target:
-SET(TARGET "explicit_wave")
+SET(TARGET "linearized_euler")
 
 # Declare all source files the target consists of.
-FILE(GLOB_RECURSE TARGET_SRC  "source/*.cc")
+SET(TARGET_SRC
+    source/${TARGET}.cc
+    source/elementwise_cg.cc
+    source/input_parameters.cc
+    source/linearized_euler_operations.cc
+    source/parameters.cc
+    source/time_integrators.cc
+    source/utilities.cc
+    #source/wave_equation_operations.cc
+    )
 FILE(GLOB_RECURSE TARGET_INC  "include/*.h")
 SET(TARGET_SRC ${TARGET_SRC}  ${TARGET_INC})
 
@@ -60,4 +69,3 @@ IF(EXISTS ${CMAKE_SOURCE_DIR}/tests/CMakeLists.txt)
   ENABLE_TESTING()
   ADD_SUBDIRECTORY(tests)
 ENDIF()
-

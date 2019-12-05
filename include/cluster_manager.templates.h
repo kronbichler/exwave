@@ -279,6 +279,7 @@ namespace HDG_WE
     parallel::distributed::Triangulation<dim> *triapll = (dynamic_cast<parallel::distributed::Triangulation<dim>*>
                                                           (const_cast<dealii::Triangulation<dim>*>
                                                            (&tria)));
+    (void)triapll;
     // setup weights of cells for processors according to clusters
     // triapll->signals.cell_weight.connect([&] (const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
     //                                          const typename parallel::distributed::Triangulation<dim>::CellStatus ) -> unsigned int
