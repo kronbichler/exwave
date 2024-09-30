@@ -22,16 +22,17 @@ using namespace dealii;
 
 enum class IntegratorType
 {
-  expleuler,     // 0 - explicit Euler
-  classrk4,      // 1 - classical explicit Runge-Kutta with 4 stages
-  lsrk45reg2,    // 2 - low storage Runge-Kutta
-  lsrk33reg2,    // 3 - low storage Runge-Kutta
-  lsrk45reg3,    // 4 - low storage Runge-Kutta
-  lsrk59reg2,    // 5 - low starage Runge-Kutta
-  ssprk,         // 6 - strong stability preserving Runge-Kutta
-  ader,          // 7 - ADER time integration
-  ader_lts,      // 8 - ADER with local time stepping
-  ader_adconfull // 9 - ADER relying on the global derivative operator
+  expleuler,      // 0 - explicit (forward) Euler
+  classrk4,       // 1 - classical explicit Runge-Kutta with 4 stages
+  lsrk45reg2,     // 2 - low storage Runge-Kutta
+  lsrk33reg2,     // 3 - low storage Runge-Kutta
+  lsrk45reg3,     // 4 - low storage Runge-Kutta
+  lsrk59reg2,     // 5 - low starage Runge-Kutta
+  ssprk,          // 6 - strong stability preserving Runge-Kutta
+  ader,           // 7 - ADER time integration
+  ader_lts,       // 8 - ADER with local time stepping
+  ader_adconfull, // 9 - ADER relying on the global derivative operator
+  impleuler       // 10 - implicit (backward) Euler
 };
 
 class Parameters

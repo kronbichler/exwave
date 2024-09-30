@@ -29,7 +29,7 @@ namespace HDG_WE
   {
   public:
 
-    static const unsigned int n_vect = VectorizedArray<Number>::n_array_elements;
+    static const unsigned int n_vect = VectorizedArray<Number>::size();
 
     ClusterManager(const double rel_tol=1.e-4)
       :relative_tolerance(rel_tol)
@@ -53,7 +53,7 @@ namespace HDG_WE
                                                            const double cfl_number);
 
     template <int dim> unsigned int cell_weight(const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
-                                                const typename parallel::distributed::Triangulation<dim>::CellStatus status)
+                                                const typename parallel::distributed::Triangulation<dim>::CellStatus)
     {
       const unsigned int cell_weight = element_categories[cell->active_cell_index()]/3;
 
@@ -105,22 +105,22 @@ namespace HDG_WE
       return dt;
     }
 
-    std::bitset<VectorizedArray<Number>::n_array_elements> get_phi_to_dst(unsigned int face) const
+    std::bitset<VectorizedArray<Number>::size()> get_phi_to_dst(unsigned int face) const
     {
       return phi_to_dst[face];
     }
 
-    std::bitset<VectorizedArray<Number>::n_array_elements> get_phi_to_fluxmemory(unsigned int face) const
+    std::bitset<VectorizedArray<Number>::size()> get_phi_to_fluxmemory(unsigned int face) const
     {
       return phi_to_fluxmemory[face];
     }
 
-    std::bitset<VectorizedArray<Number>::n_array_elements> get_phi_neighbor_to_dst(unsigned int face) const
+    std::bitset<VectorizedArray<Number>::size()> get_phi_neighbor_to_dst(unsigned int face) const
     {
       return phi_neighbor_to_dst[face];
     }
 
-    std::bitset<VectorizedArray<Number>::n_array_elements> get_phi_neighbor_to_fluxmemory(unsigned int face) const
+    std::bitset<VectorizedArray<Number>::size()> get_phi_neighbor_to_fluxmemory(unsigned int face) const
     {
       return phi_neighbor_to_fluxmemory[face];
     }

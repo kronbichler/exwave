@@ -26,7 +26,7 @@ SET(TARGET_SRC ${TARGET_SRC}  ${TARGET_INC})
 
 # Usually, you will not need to modify anything beyond this point...
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5.8)
 
 FIND_PACKAGE(deal.II 8.5.0 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}

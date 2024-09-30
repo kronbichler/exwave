@@ -91,7 +91,7 @@ namespace HDG_WE
     {}
 
     virtual double value (const Point<dim>   &p ,
-                          const unsigned int  c=0) const;
+                          const unsigned int  c=0) const override;
 
   private:
     const int component;

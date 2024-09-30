@@ -281,8 +281,8 @@ namespace HDG_WE
                                                            (&tria)));
 
     // setup weights of cells for processors according to clusters
-    triapll->signals.cell_weight.connect([&] (const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
-                                              const typename parallel::distributed::Triangulation<dim>::CellStatus ) -> unsigned int
+    triapll->signals.weight.connect([&] (const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
+                                         const typename parallel::distributed::Triangulation<dim>::CellStatus ) -> unsigned int
     { return (n_clusters-int(element_categories[cell->active_cell_index()]/3)-1)*cluster_diff*1000; });
 
     // repartition triangulation
@@ -311,7 +311,7 @@ namespace HDG_WE
     mf_index.resize(op.get_matrix_free().get_dof_handler(0).get_triangulation().n_active_cells());
 
     for (unsigned int i=0; i<n_cells_with_ghosts; ++i)
-      for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(i); ++v)
+      for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(i); ++v)
         mf_index[op.get_matrix_free().get_cell_iterator(i,v)->active_cell_index()] = i;
   }
 
@@ -325,8 +325,8 @@ namespace HDG_WE
     // steps now must be set to multiples of this dt
     fastest_time_step = op.get_time_control().get_time_step();
 
-    n_cells_with_ghosts = op.get_matrix_free().n_macro_cells()+op.get_matrix_free().n_ghost_cell_batches();
-    n_cells = op.get_matrix_free().n_macro_cells();
+    n_cells_with_ghosts = op.get_matrix_free().n_cell_batches()+op.get_matrix_free().n_ghost_cell_batches();
+    n_cells = op.get_matrix_free().n_cell_batches();
 
     // setup matrix free index to cell index
     setup_mf_index_to_cell_index(op);
@@ -340,7 +340,7 @@ namespace HDG_WE
 
     // read the cluster categorization
     for (unsigned int cell=0; cell<n_cells_with_ghosts; ++cell)
-      for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(cell); ++v)
+      for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(cell); ++v)
         {
           unsigned int index = op.get_matrix_free().get_cell_iterator(cell,v)->active_cell_index();
           cell_cluster_ids[cell] = int(element_categories[index]/3); // use the categories to determine cluster and faster and slower
@@ -498,7 +498,7 @@ namespace HDG_WE
 
     for (unsigned int n=0; n<GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
       for (unsigned int e=0; e<n_cells_with_ghosts; ++e)
-        for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(e); ++v)
+        for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(e); ++v)
           {
             cell_neighbor_index[n][v][e] = op.get_matrix_free().get_cell_iterator(e,v)->neighbor_index(n);
             if (cell_neighbor_index[n][v][e] >= 0)
@@ -507,7 +507,7 @@ namespace HDG_WE
 
     for (unsigned int e=0; e<n_cells_with_ghosts; ++e)
       for (unsigned int n=0; n<GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
-        for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(e); ++v)
+        for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(e); ++v)
           if (cell_neighbor_index[n][v][e] >= 0)
             cell_neighbor_has_children[n][e][v] = op.get_matrix_free().get_cell_iterator(e,v)->neighbor(n)->has_children();
 
@@ -647,7 +647,7 @@ namespace HDG_WE
                     update_cell[e]=false;
                   for (unsigned int e=0; e<n_cells_with_ghosts; ++e)
                     {
-                      for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(e); ++v)
+                      for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(e); ++v)
                         for (unsigned int n=0; n<GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
                           if (cell_neighbor_index[n][v][e]>=0)
                             {
@@ -693,7 +693,7 @@ namespace HDG_WE
                     update_cell[e] = false;
                   for (unsigned int e=0; e<n_cells_with_ghosts; ++e)
                     {
-                      for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(e); ++v)
+                      for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(e); ++v)
                         for (unsigned int n=0; n<GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
                           if (cell_neighbor_index[n][v][e]>=0)
                             if (temp_slower[mf_index[cell_neighbor_active_cell_index[n][v][e]]] && cell_cluster_ids[e]==actual_cluster+1)
@@ -807,7 +807,7 @@ namespace HDG_WE
       {
         if (update_cell[e] == false)
           {
-            for (unsigned int v=0; v<op.get_matrix_free().n_components_filled(e); ++v)
+            for (unsigned int v=0; v<op.get_matrix_free().n_active_entries_per_cell_batch(e); ++v)
               for (unsigned int n=0; n<GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
                 if (cell_neighbor_index[n][v][e]>=0)
                   {

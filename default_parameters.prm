@@ -21,14 +21,14 @@ subsection General
   set dimension = 3
   set fe_degree = 6
   set n_initial_intervals = 5
-  set n_refinements = 3
+  set n_refinements = 2
   set grid_transform_factor = 0.1
   set n_adaptive_refinements = 0
   set adaptive_refinement_interval = 100
 end
 
 subsection TimeDiscretization
-  set time_integrator = ADER
+  set time_integrator = LSRK45R2
   set cfl_number = 0.17
   set max_time_steps = 1000000
   set final_time = 1

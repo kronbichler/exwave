@@ -30,7 +30,7 @@ namespace IterativeHelper
   template <typename Number, typename Number2>
   bool all_smaller (const dealii::VectorizedArray<Number> a, const Number2 b)
   {
-    for (unsigned int i=0; i<dealii::VectorizedArray<Number>::n_array_elements; ++i)
+    for (unsigned int i=0; i<dealii::VectorizedArray<Number>::size(); ++i)
       if (a[i] >= b)
         return false;
     return true;
@@ -54,7 +54,7 @@ namespace IterativeHelper
     // case)
     const double threshold = std::max(1e-5*tolerance*tolerance,
                                       1e4*static_cast<double>(std::numeric_limits<Number>::min()));
-    for (unsigned int i=0; i<dealii::VectorizedArray<Number>::n_array_elements; ++i)
+    for (unsigned int i=0; i<dealii::VectorizedArray<Number>::size(); ++i)
       if (x[i] < threshold)
         x[i] = 1;
   }
@@ -136,7 +136,7 @@ namespace IterativeHelper
     if (n_iter > MAX_ITER)
       {
         std::ostringstream message;
-        for (unsigned int v=0; v<value_type::n_array_elements; v++)
+        for (unsigned int v=0; v<value_type::size(); v++)
           message << " v: " << v << "  " << norm_r_abs[v] << " ";
         Assert(n_iter <= MAX_ITER,
                dealii::ExcMessage("No convergence of solver in " + dealii::Utilities::to_string(MAX_ITER)

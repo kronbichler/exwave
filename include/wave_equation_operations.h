@@ -117,44 +117,44 @@ namespace HDG_WE
     virtual void setup(const MappingQGeneric<dim>                 &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
-                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
+                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>()) override;
 
-    virtual std::string Name();
+    virtual std::string Name() override;
 
     // Function to bring material parameters specified as input to the element
     // vectors
-    void reset_data_vectors(const std::vector<Material> mats);
+    virtual void reset_data_vectors(const std::vector<Material> mats);
 
     // allow access to matrix free object
-    const MatrixFree<dim,value_type> &get_matrix_free() const;
+    virtual const MatrixFree<dim,value_type> &get_matrix_free() const override;
 
     // allow access to time control
-    TimeControl &get_time_control() const;
+    virtual TimeControl &get_time_control() const override;
 
     // Standard evaluation routine
-    void apply (const LinearAlgebra::distributed::Vector<value_type> &src,
-                LinearAlgebra::distributed::Vector<value_type>       &dst) const;
+    virtual void apply (const LinearAlgebra::distributed::Vector<value_type> &src,
+                        LinearAlgebra::distributed::Vector<value_type>       &dst) const override;
 
     // Standard evaluation routine
     virtual void apply_ader (const LinearAlgebra::distributed::Vector<value_type> &,
-                             LinearAlgebra::distributed::Vector<value_type> &) const;
+                             LinearAlgebra::distributed::Vector<value_type> &) const override;
 
     // projection of initial field
-    void project_initial_field(LinearAlgebra::distributed::Vector<value_type> &solution,
-                               const Function<dim>                                     &function) const;
+    virtual void project_initial_field(LinearAlgebra::distributed::Vector<value_type> &solution,
+                                       const Function<dim>                                     &function) const override;
 
-    void compute_post_pressure(const LinearAlgebra::distributed::Vector<value_type> &solution,
-                               LinearAlgebra::distributed::Vector<value_type>       &tmp_vector,
-                               LinearAlgebra::distributed::Vector<value_type>                     &post_pressure) const;
+    virtual void compute_post_pressure(const LinearAlgebra::distributed::Vector<value_type> &solution,
+                                       LinearAlgebra::distributed::Vector<value_type>       &tmp_vector,
+                                       LinearAlgebra::distributed::Vector<value_type>                     &post_pressure) const override;
 
-    void estimate_error(const LinearAlgebra::distributed::Vector<value_type> &solution,
-                        LinearAlgebra::distributed::Vector<value_type>       &tmp_vector,
-                        Vector<double>                                                &error_estimate) const;
+    virtual void estimate_error(const LinearAlgebra::distributed::Vector<value_type> &solution,
+                                LinearAlgebra::distributed::Vector<value_type>       &tmp_vector,
+                                Vector<double>                                                &error_estimate) const override;
 
     // return the cluster id (only interesting for ADER LTS)
-    virtual unsigned int cluster_id(unsigned int ) const;
+    virtual unsigned int cluster_id(unsigned int ) const override;
 
-    virtual value_type time_step(unsigned int ) const;
+    virtual value_type time_step(unsigned int ) const override;
 
     // return the speed of sound of a given element (cell and vect index required)
     value_type speed_of_sound(int cell_index, int vect_index) const;
@@ -236,13 +236,13 @@ namespace HDG_WE
     virtual void setup(const MappingQGeneric<dim>                 &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
-                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
+                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>()) override;
 
-    virtual std::string Name();
+    virtual std::string Name() override;
 
     // Overwrite base evaluation routine
     virtual void apply_ader (const LinearAlgebra::distributed::Vector<value_type> &src,
-                             LinearAlgebra::distributed::Vector<value_type>       &dst) const;
+                             LinearAlgebra::distributed::Vector<value_type>       &dst) const override;
 
   protected:
     // additional vector to work with (stores temporal values between first and second evaluation)
@@ -305,13 +305,13 @@ namespace HDG_WE
     virtual void setup(const MappingQGeneric<dim>                 &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
-                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
+                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>()) override;
 
-    virtual std::string Name();
+    virtual std::string Name() override;
 
     // Overwrite base evaluation routine
     virtual void apply_ader (const LinearAlgebra::distributed::Vector<value_type> &src,
-                             LinearAlgebra::distributed::Vector<value_type>       &dst) const;
+                             LinearAlgebra::distributed::Vector<value_type>       &dst) const override;
 
   protected:
     // additional vector to work with (stores temporal values between first and second evaluation)
@@ -333,17 +333,17 @@ namespace HDG_WE
     virtual void setup(const MappingQGeneric<dim>                 &mapping,
                        const std::vector<const DoFHandler<dim> *> &dof_handlers,
                        const std::vector<Material>                &mats,
-                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>());
+                       const std::vector<unsigned int>            &vectorization_categories = std::vector<unsigned int>()) override;
 
-    virtual std::string Name();
+    virtual std::string Name() override;
 
     // Overwrite base evaluation routine
     virtual void apply_ader (const LinearAlgebra::distributed::Vector<value_type> &src,
-                             LinearAlgebra::distributed::Vector<value_type>       &dst) const;
+                             LinearAlgebra::distributed::Vector<value_type>       &dst) const override;
 
-    unsigned int cluster_id(unsigned int cell) const;
+    virtual unsigned int cluster_id(unsigned int cell) const override;
 
-    virtual value_type time_step(unsigned int cell) const;
+    virtual value_type time_step(unsigned int cell) const override;
 
     void communicate_flux_memory() const;
 
@@ -359,7 +359,7 @@ namespace HDG_WE
     mutable LinearAlgebra::distributed::Vector<value_type> flux_memory;
 
     // we need this frequently for index calculations
-    static const unsigned int n_vect = VectorizedArray<value_type>::n_array_elements;
+    static const unsigned int n_vect = VectorizedArray<value_type>::size();
 
     void evaluate_cells_and_faces_first_ader(const LinearAlgebra::distributed::Vector<value_type>  &src,
                                              LinearAlgebra::distributed::Vector<value_type>        &dst) const;
@@ -370,12 +370,12 @@ namespace HDG_WE
     virtual void local_apply_firstader_domain (const MatrixFree<dim,value_type>                              &data,
                                                LinearAlgebra::distributed::Vector<value_type>        &dst,
                                                const LinearAlgebra::distributed::Vector<value_type>  &src,
-                                               const std::pair<unsigned int,unsigned int>                &cell_range) const;
+                                               const std::pair<unsigned int,unsigned int>                &cell_range) const override;
 
     virtual void local_apply_secondader_domain (const MatrixFree<dim,value_type>                              &data,
                                                 LinearAlgebra::distributed::Vector<value_type>        &dst,
                                                 const LinearAlgebra::distributed::Vector<value_type>  &src,
-                                                const std::pair<unsigned int,unsigned int>                &cell_range) const;
+                                                const std::pair<unsigned int,unsigned int>                &cell_range) const override;
 
     void local_apply_dummy_domain (const MatrixFree<dim,value_type>                              &data,
                                    LinearAlgebra::distributed::Vector<value_type>        &dst,
@@ -386,12 +386,12 @@ namespace HDG_WE
     virtual void local_apply_ader_face (const MatrixFree<dim,value_type>       &data,
                                         LinearAlgebra::distributed::Vector<value_type>         &dst,
                                         const LinearAlgebra::distributed::Vector<value_type>   &src,
-                                        const std::pair<unsigned int,unsigned int>                 &cell_range) const;
+                                        const std::pair<unsigned int,unsigned int>                 &cell_range) const override;
 
     virtual void local_apply_ader_boundary_face (const MatrixFree<dim,value_type>                              &data,
                                                  LinearAlgebra::distributed::Vector<value_type>        &dst,
                                                  const LinearAlgebra::distributed::Vector<value_type>  &src,
-                                                 const std::pair<unsigned int,unsigned int>              &cell_range) const;
+                                                 const std::pair<unsigned int,unsigned int>              &cell_range) const override;
 
     virtual void local_apply_postprocessing_domain (const MatrixFree<dim,value_type>                              &data,
                                                     LinearAlgebra::distributed::Vector<value_type>        &dst,

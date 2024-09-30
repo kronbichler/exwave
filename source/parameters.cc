@@ -55,7 +55,7 @@ void Parameters::declare_parameters (ParameterHandler &prm)
   prm.leave_subsection();
 
   prm.enter_subsection ("TimeDiscretization");
-  prm.declare_entry ("time_integrator","ADER",Patterns::Selection("ExplEuler|clRK4|LSRK45R2|LSRK33R2|LSRK45R3|LSRK59R2|SSPRK|ADER|ADERLTS|ADERADCONFULL"),
+  prm.declare_entry ("time_integrator","ADER",Patterns::Selection("ExplEuler|clRK4|LSRK45R2|LSRK33R2|LSRK45R3|LSRK59R2|SSPRK|ADER|ADERLTS|ADERADCONFULL|ImplEuler"),
                      "Type of time integrator.");
   prm.declare_entry ("cfl_number","0.1",Patterns::Double(),
                      "Courant number.");
@@ -122,14 +122,7 @@ void Parameters::check_for_file (const std::string &parameter_filename,
 void Parameters::parse_parameters (const std::string parameter_file,
                                    ParameterHandler &prm)
 {
-  try
-    {
-      prm.parse_input (parameter_file);
-    }
-  catch (...)
-    {
-      AssertThrow (false, ExcMessage ("Invalid input parameter file."));
-    }
+  prm.parse_input (parameter_file);
 
   prm.enter_subsection("General");
 
@@ -188,6 +181,10 @@ void Parameters::parse_parameters (const std::string parameter_file,
     {
       integ_type = IntegratorType::ader_adconfull;
     }
+  else if (timestring=="ImplEuler")
+    {
+      integ_type = IntegratorType::impleuler;
+    }
   else
     AssertThrow(false,
                 ExcMessage("unknown time integrator " + timestring + " requested"));
@@ -235,7 +232,7 @@ void Parameters::output_parameters (std::ostream &ostream)
     {
       ostream<<std::endl;
       ostream<< "The simulation was run with the following parameters: "<<std::endl;
-      prm.print_parameters(ostream,prm.ShortText);
+      prm.print_parameters(ostream,prm.ShortPRM);
       ostream<<std::endl;
     }
 }

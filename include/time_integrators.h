@@ -27,9 +27,9 @@ template <typename VectorType, typename Operator>
 class ExplicitIntegrator
 {
 public:
-  ExplicitIntegrator() {}
+  ExplicitIntegrator() = default;
 
-  ~ExplicitIntegrator() {}
+  virtual ~ExplicitIntegrator() = default;
 
   virtual void perform_time_step(VectorType  &vec_n,
                                  VectorType        &vec_np,
@@ -47,7 +47,7 @@ public:
   virtual void perform_time_step(VectorType  &vec_n,
                                  VectorType        &vec_np,
                                  const double                    time_step,
-                                 Operator                       &op);
+                                 Operator                       &op) override;
 };
 
 template <typename VectorType, typename Operator>
@@ -58,7 +58,7 @@ public:
   virtual void perform_time_step(VectorType    &vec_n,
                                  VectorType        &vec_np,
                                  const double                    ,
-                                 Operator                       &op);
+                                 Operator                       &op) override;
 };
 
 template <typename VectorType, typename Operator>
@@ -69,7 +69,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType  &vec_np,
                                  const double              ,
-                                 Operator                  &op);
+                                 Operator                  &op) override;
 };
 
 template <typename VectorType, typename Operator>
@@ -81,7 +81,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType       &vec_np,
                                  const double                   time_step,
-                                 Operator                      &op);
+                                 Operator                      &op) override;
 
 private:
   VectorType vec_tmp1, vec_tmp2;
@@ -97,7 +97,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType &vec_np,
                                  const double             time_step,
-                                 Operator                &op);
+                                 Operator                &op) override;
 
 private:
   VectorType vec_tmp1;
@@ -114,7 +114,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType &vec_np,
                                  const double             time_step,
-                                 Operator                 &op);
+                                 Operator                 &op) override;
 
 private:
   double computing_times;
@@ -130,7 +130,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType &vec_np,
                                  const double             time_step,
-                                 Operator                 &op);
+                                 Operator                 &op) override;
 
 private:
   double computing_times;
@@ -148,7 +148,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType &vec_np,
                                  const double             time_step,
-                                 Operator                &op);
+                                 Operator                &op) override;
 
 private:
   VectorType vec_tmp1, vec_tmp2;
@@ -166,7 +166,7 @@ public:
   virtual void perform_time_step(VectorType &vec_n,
                                  VectorType &vec_np,
                                  const double             time_step,
-                                 Operator                &op);
+                                 Operator                &op) override;
 private:
   FullMatrix<double> A,B;
   bool coeffs_are_initialized;

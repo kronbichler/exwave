@@ -174,7 +174,7 @@ namespace
       :
       updater (factor1, factor2, is_last, vector1, vector2, vector3)
     {
-      const std::size_t size = vector1.local_size();
+      const std::size_t size = vector1.locally_owned_size();
       if (size < internal::VectorImplementation::minimum_parallel_grain_size)
         apply_to_subrange (0, size);
       else
@@ -186,7 +186,7 @@ namespace
 
     virtual void
     apply_to_subrange (const std::size_t begin,
-                       const std::size_t end) const
+                       const std::size_t end) const override
     {
       updater.apply_to_subrange(begin, end);
     }

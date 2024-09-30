@@ -305,12 +305,12 @@ namespace HDG_WE
             // luckily the quadrature weights are also symmetric about the
             // center of the cell
             const unsigned int stride = (quad_embed.size()+1)/2;
-            AssertDimension(stride*quad.size(), shape_infos_embed[k-1].shape_values_eo.size());
-            AssertDimension(stride*quad.size(), shape_infos_embed[k-1].shape_hessians_eo.size());
+            AssertDimension(stride*quad.size(), shape_infos_embed[k-1].data[0].shape_values_eo.size());
+            AssertIndexRange(stride*quad.size(), shape_infos_embed[k-1].data[0].shape_hessians_eo.size() + 1);
             for (unsigned int i=0; i<quad.size(); ++i)
               for (unsigned int q=0; q<stride; ++q)
-                shape_infos_embed[k-1].shape_hessians_eo[i*stride+q] =
-                  shape_infos_embed[k-1].shape_values_eo[i*stride+q] * (quad_embed.weight(q) / quad.weight(i));
+                shape_infos_embed[k-1].data[0].shape_hessians_eo[i*stride+q] =
+                  shape_infos_embed[k-1].data[0].shape_values_eo[i*stride+q] * (quad_embed.weight(q) / quad.weight(i));
           }
       }
 
@@ -384,14 +384,14 @@ namespace HDG_WE
   void
   WaveEquationOperation<dim,fe_degree>::reset_data_vectors(const std::vector<Material> mats)
   {
-    densities.resize(data.n_macro_cells()+data.n_ghost_cell_batches());
-    speeds.resize(data.n_macro_cells()+data.n_ghost_cell_batches());
+    densities.resize(data.n_cell_batches()+data.n_ghost_cell_batches());
+    speeds.resize(data.n_cell_batches()+data.n_ghost_cell_batches());
 
-    for (unsigned int i=0; i<data.n_macro_cells()+data.n_ghost_cell_batches(); ++i)
+    for (unsigned int i=0; i<data.n_cell_batches()+data.n_ghost_cell_batches(); ++i)
       {
         densities[i] = 1.;
         speeds[i] = 1.;
-        for (unsigned int v=0; v<data.n_components_filled(i); ++v)
+        for (unsigned int v=0; v<data.n_active_entries_per_cell_batch(i); ++v)
           {
             densities[i][v] = mats[data.get_cell_iterator(i,v)->material_id()].density;
             speeds[i][v] = mats[data.get_cell_iterator(i,v)->material_id()].speed;
@@ -433,13 +433,13 @@ namespace HDG_WE
     // gradients of the scalar pressure than divergence of velocity and
     // values of pressure
     phi_v.reinit(cell);
-    phi_v.gather_evaluate (src, true, false);
+    phi_v.gather_evaluate (src, EvaluationFlags::values);
 
     phi_p.reinit(cell);
-    phi_p.gather_evaluate(src, false, true);
+    phi_p.gather_evaluate(src, EvaluationFlags::gradients);
 
     const VectorizedArray<value_type> rho = this->densities[cell];
-    const VectorizedArray<value_type> rho_inv = 1./this->densities[cell];
+    const VectorizedArray<value_type> rho_inv = 1./rho;
     const VectorizedArray<value_type> c_sq = this->speeds[cell]*this->speeds[cell];
 
     for (unsigned int q=0; q<phi_v.n_q_points; ++q)
@@ -451,8 +451,8 @@ namespace HDG_WE
         phi_v.submit_value(-rho_inv*pressure_gradient,q);
       }
 
-    phi_v.integrate (true, false);
-    phi_p.integrate (false, true);
+    phi_v.integrate (EvaluationFlags::values);
+    phi_p.integrate (EvaluationFlags::gradients);
   }
 
 
@@ -487,7 +487,7 @@ namespace HDG_WE
                       LinearAlgebra::distributed::Vector<value_type>               *dst) const
   {
     phi.reinit(face);
-    phi.gather_evaluate(src, true, false);
+    phi.gather_evaluate(src, EvaluationFlags::values);
     const VectorizedArray<value_type> rho_plus = phi.read_cell_data(densities);
     const VectorizedArray<value_type> rho_inv_plus = 1./rho_plus;
     const VectorizedArray<value_type> c_plus = phi.read_cell_data(speeds);
@@ -495,7 +495,7 @@ namespace HDG_WE
     const VectorizedArray<value_type> tau_plus = 1./c_plus/rho_plus;
 
     phi_neighbor.reinit(face);
-    phi_neighbor.gather_evaluate(src, true, false);
+    phi_neighbor.gather_evaluate(src, EvaluationFlags::values);
     const VectorizedArray<value_type> rho_minus = phi_neighbor.read_cell_data(densities);
     const VectorizedArray<value_type> rho_inv_minus = 1./rho_minus;
     const VectorizedArray<value_type> c_minus = phi_neighbor.read_cell_data(speeds);
@@ -539,14 +539,14 @@ namespace HDG_WE
     // dst is not the null pointer -> directly write into the result
     if (dst != nullptr)
       {
-        phi.integrate_scatter(true,false,*dst);
-        phi_neighbor.integrate_scatter(true,false,*dst);
+        phi.integrate_scatter(EvaluationFlags::values,*dst);
+        phi_neighbor.integrate_scatter(EvaluationFlags::values,*dst);
       }
     // else do the full interpolation, a special function
     else
       {
-        phi.integrate(true,false);
-        phi_neighbor.integrate(true,false);
+        phi.integrate(EvaluationFlags::values);
+        phi_neighbor.integrate(EvaluationFlags::values);
       }
   }
 
@@ -575,7 +575,7 @@ namespace HDG_WE
                          LinearAlgebra::distributed::Vector<value_type>               *dst) const
   {
     phi.reinit(face);
-    phi.gather_evaluate(src,true,false);
+    phi.gather_evaluate(src, EvaluationFlags::values);
 
     const VectorizedArray<value_type> rho = phi.read_cell_data(densities);
     const VectorizedArray<value_type> rho_inv = 1./rho;
@@ -623,9 +623,9 @@ namespace HDG_WE
         phi.submit_value(val_plus,q);
       }
     if (dst != nullptr)
-      phi.integrate_scatter(true,false,*dst);
+      phi.integrate_scatter(EvaluationFlags::values,*dst);
     else
-      phi.integrate(true,false);
+      phi.integrate(EvaluationFlags::values);
   }
 
 
@@ -760,10 +760,10 @@ namespace HDG_WE
         // the linear system.
         VectorizedArray<Number> tmp_value = src[0];
         const_cast<VectorizedArray<Number> *>(src)[0] = 0.;
-        phi.evaluate(src, false, true);
+        phi.evaluate(src, EvaluationFlags::gradients);
         for (unsigned int q=0; q<phi.n_q_points; ++q)
           phi.submit_gradient(phi.get_gradient(q), q);
-        phi.integrate(false, true, dst);
+        phi.integrate(EvaluationFlags::gradients, dst);
         dst[0] = tmp_value;
         const_cast<VectorizedArray<Number> *>(src)[0] = tmp_value;
       }
@@ -798,20 +798,20 @@ namespace HDG_WE
     IterativeHelper::SolverCGvect<VectorizedArray<value_type> > cg_solver(post_pressure.dofs_per_cell,
         std::max(1e-20, static_cast<double>(1000.*std::sqrt(std::numeric_limits<value_type>::min()))), std::max(1e-11,1e2*std::numeric_limits<value_type>::epsilon()), 6*post_pressure.dofs_per_cell);
 
-    for (unsigned int cell=0; cell<data.n_macro_cells(); ++cell)
+    for (unsigned int cell=0; cell<data.n_cell_batches(); ++cell)
       {
         post_pressure.reinit(cell);
 
         velocity.reinit(cell);
         velocity.read_dof_values(tmp_vector);
-        velocity.evaluate(true, false);
+        velocity.evaluate(EvaluationFlags::values);
 
         // compute rhs (nabla phi, -rho v)
         const VectorizedArray<value_type> rho = densities[cell];
         for (unsigned int q=0; q<pressure.n_q_points; ++q)
           post_pressure.submit_gradient(-rho * velocity.get_value(q), q);
 
-        post_pressure.integrate(false, true, rhs.begin());
+        post_pressure.integrate(EvaluationFlags::gradients, rhs.begin());
 
         // since the linear system is singular, we need to remove one
         // equation. We remove the first one by setting it to zero in
@@ -828,12 +828,12 @@ namespace HDG_WE
         const VectorizedArray<value_type> volume = pressure.integrate_value();
 
         pressure.read_dof_values(solution);
-        pressure.evaluate(true, false);
+        pressure.evaluate(EvaluationFlags::values);
         for (unsigned int q=0; q<pressure.n_q_points; ++q)
           pressure.submit_value(pressure.get_value(q), q);
         const VectorizedArray<value_type> correct_pressure = pressure.integrate_value();
 
-        post_pressure.evaluate(result.begin(), true, false);
+        post_pressure.evaluate(result.begin(), EvaluationFlags::values);
         for (unsigned int q=0; q<pressure.n_q_points; ++q)
           pressure.submit_value(post_pressure.get_value(q), q);
         const VectorizedArray<value_type> preliminary_pressure = pressure.integrate_value();
@@ -879,20 +879,20 @@ namespace HDG_WE
     FEEvaluation<dim,fe_degree,fe_degree+1,dim,value_type> velocity(data, 0, 0, 0);
     FEEvaluation<dim,fe_degree,fe_degree+1,1,value_type> pressure(data, 0, 0, dim);
 
-    for (unsigned int cell=0; cell<data.n_macro_cells(); ++cell)
+    for (unsigned int cell=0; cell<data.n_cell_batches(); ++cell)
       {
         velocity.reinit(cell);
-        velocity.gather_evaluate(tmp_vector, true, false);
+        velocity.gather_evaluate(tmp_vector, EvaluationFlags::values);
 
         pressure.reinit(cell);
-        pressure.gather_evaluate(solution, false, true);
+        pressure.gather_evaluate(solution, EvaluationFlags::gradients);
 
         // Define the error as the square difference between the original
         // pressure gradient and the reconstructed pressure
         for (unsigned int q=0; q<pressure.n_q_points; ++q)
           pressure.submit_value((pressure.get_gradient(q)-make_tensor(velocity.get_value(q))).norm_square(), q);
         const VectorizedArray<value_type> errors = pressure.integrate_value();
-        for (unsigned int v=0; v<data.n_components_filled(cell); ++v)
+        for (unsigned int v=0; v<data.n_active_entries_per_cell_batch(cell); ++v)
           post_pressure_vector(data.get_cell_iterator(cell, v)->active_cell_index()) = std::sqrt(errors[v]);
       }
   }
@@ -907,7 +907,7 @@ namespace HDG_WE
     const unsigned int n_q_points = FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,value_type>::static_n_q_points;
     FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,value_type> &phi = mass_matrix_data->phi[0];
 
-    for (unsigned int cell=0; cell<data.n_macro_cells(); ++cell)
+    for (unsigned int cell=0; cell<data.n_cell_batches(); ++cell)
       {
         phi.reinit(cell);
         for (unsigned int q=0; q<n_q_points; ++q)
@@ -915,7 +915,7 @@ namespace HDG_WE
             Point<dim,VectorizedArray<value_type> > q_points = phi.quadrature_point(q);
             Tensor<1,dim+1,VectorizedArray<value_type> > rhs;
             for (unsigned int d=0; d<dim+1; ++d)
-              for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements; ++v)
+              for (unsigned int v=0; v<VectorizedArray<value_type>::size(); ++v)
                 {
                   Point<dim> q_point;
                   for (unsigned int e=0; e<dim; ++e)
@@ -924,7 +924,7 @@ namespace HDG_WE
                 }
             phi.submit_value(rhs,q);
           }
-        phi.integrate(true,false);
+        phi.integrate(EvaluationFlags::values);
 
         mass_matrix_data->inverse.fill_inverse_JxW_values(mass_matrix_data->coefficients);
         mass_matrix_data->inverse.apply(mass_matrix_data->coefficients, dim+1,
@@ -985,7 +985,7 @@ namespace HDG_WE
     // init cell
     phi_eval.reinit(cell);
 
-    phi_eval.gather_evaluate (src, true, !(this->parameters.use_ader_post), false);
+    phi_eval.gather_evaluate (src, EvaluationFlags::values | (this->parameters.use_ader_post ? EvaluationFlags::nothing : EvaluationFlags::gradients));
     for (unsigned int q=0; q<n_q_points; ++q)
       {
         // contribution from k=0
@@ -1022,7 +1022,7 @@ namespace HDG_WE
 
     if (this->parameters.use_ader_post)
       {
-        phi_eval.gather_evaluate(recongraddiv, true, false, false);
+        phi_eval.gather_evaluate(recongraddiv, EvaluationFlags::values);
 
         for (unsigned int q=0; q<n_q_points; ++q)
           {
@@ -1091,7 +1091,7 @@ namespace HDG_WE
       {
         internal::EvaluatorTensorProduct<internal::evaluate_evenodd, dim, my_degree+1, my_degree+1, VectorizedArray<value_type> >
         eval(AlignedVector<VectorizedArray<value_type> >(),
-             shape_infos[reduce_step].shape_gradients_collocation_eo,
+             shape_infos[reduce_step].data[0].shape_gradients_collocation_eo,
              AlignedVector<VectorizedArray<value_type> >());
         if (this->data.get_mapping_info().get_cell_type(cell) == internal::MatrixFreeFunctions::cartesian)
           {
@@ -1199,7 +1199,7 @@ namespace HDG_WE
     else
       {
         // integrate over element
-        phi_eval.integrate(true,false);
+        phi_eval.integrate(EvaluationFlags::values);
 
         // apply inverse mass matrix
         //{
@@ -1209,7 +1209,7 @@ namespace HDG_WE
         //}
 
         // evaulate this phi at the gauss points
-        phi_eval.evaluate(false,true);
+        phi_eval.evaluate(EvaluationFlags::gradients);
 
         // sum over all integration points
         for (unsigned int q=0; q<n_q_points; ++q)
@@ -1241,7 +1241,7 @@ namespace HDG_WE
           {
             // project contribution from higher degree to the lower degree
             constexpr int next_degree = my_degree >= 2 ? my_degree-2 : 1;
-            internal::FEEvaluationImplBasisChange<internal::evaluate_evenodd,dim,next_degree+1,my_degree+1,dim+1,VectorizedArray<value_type>,VectorizedArray<value_type> >::do_backward(shape_infos_embed[reduce_step].shape_hessians_eo, false, spectral_array, spectral_array);
+            internal::FEEvaluationImplBasisChange<internal::evaluate_evenodd,internal::EvaluatorQuantity::hessian,dim,next_degree+1,my_degree+1>::do_backward(dim,shape_infos_embed[reduce_step].data[0].shape_hessians_eo, false, spectral_array, spectral_array);
             VectorizedArray<value_type> next_contrib_array[Utilities::pow(next_degree+1,dim)*(dim+1)];
 
             // run Taylor-Cauchy-Kovalewski at lower degree
@@ -1249,7 +1249,7 @@ namespace HDG_WE
                                                                   (cell, phi_eval, spectral_array, tstart, tend, next_contrib_array);
 
             // interpolation correction to the higher degree contribution
-            internal::FEEvaluationImplBasisChange<internal::evaluate_evenodd,dim,next_degree+1,my_degree+1,dim+1,VectorizedArray<value_type>,VectorizedArray<value_type> >::do_forward(shape_infos_embed[reduce_step].shape_values_eo, next_contrib_array, spectral_array);
+            internal::FEEvaluationImplBasisChange<internal::evaluate_evenodd,internal::EvaluatorQuantity::value,dim,next_degree+1,my_degree+1>::do_forward(dim, shape_infos_embed[reduce_step].data[0].shape_values_eo, next_contrib_array, spectral_array);
             for (unsigned int q=0; q<n_q_points*(dim+1); ++q)
                    contrib[q] += spectral_array[q];
           }
@@ -1316,11 +1316,11 @@ namespace HDG_WE
         //{
         // velocity
         velocity.reinit(cell);
-        velocity.gather_evaluate (src, true, false);
+        velocity.gather_evaluate (src, EvaluationFlags::values);
 
         // pressure
         pressure.reinit(cell);
-        pressure.gather_evaluate(src, false, true);
+        pressure.gather_evaluate(src, EvaluationFlags::gradients);
 
         // and material coefficients
         const VectorizedArray<value_type> rho = this->densities[cell];
@@ -1335,9 +1335,9 @@ namespace HDG_WE
             velocity.submit_value(rho_inv*pressure_gradient, q);
           }
 
-        velocity.integrate_scatter (true, false, dst);
+        velocity.integrate_scatter (EvaluationFlags::values, dst);
 
-        pressure.integrate_scatter(false, true, dst);
+        pressure.integrate_scatter(EvaluationFlags::gradients, dst);
       }
   }
 
@@ -1433,7 +1433,7 @@ namespace HDG_WE
             // the standard business analog to local_apply_firstaderlts is done
             // now comes the update!
             {
-              phi_eval.evaluate (true, true, false);
+              phi_eval.evaluate (EvaluationFlags::values | EvaluationFlags::gradients);
 
               const VectorizedArray<value_type> rho = this->densities[cell];
               const VectorizedArray<value_type> rho_inv = 1./this->densities[cell];
@@ -1456,7 +1456,7 @@ namespace HDG_WE
                   phi_eval.submit_gradient(temp_gradient,q);
                 }
 
-              phi_eval.integrate (true, true);
+              phi_eval.integrate (EvaluationFlags::values | EvaluationFlags::gradients);
 
               // add memory variable
               unsigned int dofs_per_cell = phi_eval.dofs_per_cell;
