@@ -81,6 +81,26 @@ namespace HDG_WE
 
         break;
       }
+      case 2:
+      {
+        GridGenerator::subdivided_hyper_cube(tria,parameters.n_initial_intervals,-1.5,1.5);
+        set_grid_transform_factor(parameters.grid_transform_factor);
+        GridTools::transform (&grid_transform<dim>, tria);
+
+        // set your boundary conditions!
+        typename Triangulation<dim>::active_cell_iterator cell = tria.begin_active(),endc = tria.end();
+        for (; cell!=endc; ++cell)
+          for (unsigned f=0; f<GeometryInfo<dim>::faces_per_cell; ++f)
+            if (cell->face(f)->at_boundary())
+              cell->face(f)->set_boundary_id(parameters.boundary_id);
+
+        // set the materials according to your material definitions above!
+        cell = tria.begin_active();
+        for (; cell!=endc; ++cell)
+          cell->set_material_id(0);
+
+        break;
+      }
       default:
         Assert(false,ExcNotImplemented());
       }
@@ -119,6 +139,21 @@ namespace HDG_WE
             return_value *= std::sin(membrane_modes*numbers::PI*p(d));
           else
             return_value *= std::cos(membrane_modes*numbers::PI*p(d));
+        break;
+      }
+      case 2:
+      {
+        if (time_derivative)
+          {
+            AssertThrow(false, ExcNotImplemented());
+          }
+        else
+          {
+            if (component == dim)
+              return_value = (p.norm_square() < 1.) ? 1.0 : 0.0;
+            else
+              return_value = 0;
+          }
         break;
       }
       default:
