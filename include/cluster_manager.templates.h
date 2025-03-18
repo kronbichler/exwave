@@ -34,17 +34,15 @@ namespace HDG_WE
     std::vector<unsigned int> temporary_cluster_ids(tria.n_active_cells(), 0);
     IndexSet                  elerowset(tria.n_global_active_cells());
     IndexSet                  elecolset(tria.n_global_active_cells());
-    const unsigned dofs_per_cell = dof_handlers[0]->get_fe().dofs_per_cell;
+    const unsigned            dofs_per_cell = dof_handlers[0]->get_fe().dofs_per_cell;
     std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-    std::vector<int> contiguous_dof_index_for_cell(tria.n_global_active_cells(),
-                                                   -1);
+    std::vector<int> contiguous_dof_index_for_cell(tria.n_global_active_cells(), -1);
 
     // setup maps
     {
-      typename DoFHandler<dim>::active_cell_iterator cell = dof_handlers[0]
-                                                              ->begin_active(),
-                                                     endc =
-                                                       dof_handlers[0]->end();
+      typename DoFHandler<dim>::active_cell_iterator cell =
+                                                       dof_handlers[0]->begin_active(),
+                                                     endc = dof_handlers[0]->end();
       for (; cell != endc; ++cell)
         if (!cell->is_artificial())
           {
@@ -63,8 +61,7 @@ namespace HDG_WE
     LinearAlgebra::distributed::Vector<Number> distributed_cell_categories;
     distributed_cell_categories.reinit(elerowset, elecolset, MPI_COMM_WORLD);
 
-    typename Triangulation<dim>::active_cell_iterator cell =
-                                                        tria.begin_active(),
+    typename Triangulation<dim>::active_cell_iterator cell = tria.begin_active(),
                                                       endc = tria.end();
     Number              minimaltimestep = std::numeric_limits<Number>::max();
     std::vector<Number> timestepcollection(tria.n_active_cells());
@@ -78,15 +75,13 @@ namespace HDG_WE
         }
     minimaltimestep = Utilities::MPI::min(minimaltimestep, MPI_COMM_WORLD);
 
-    Number eps =
-      minimaltimestep /
-      10.0; // we want at least one cell with category 0 but sometimes
-            // int(double/double) does give 0 and sometimes 1 -> therefore eps
+    Number eps = minimaltimestep /
+                 10.0; // we want at least one cell with category 0 but sometimes
+                       // int(double/double) does give 0 and sometimes 1 -> therefore eps
     n_clusters = 0;
     for (unsigned int ac = 0; ac < tria.n_active_cells(); ++ac)
       {
-        temporary_cluster_ids[ac] =
-          int((timestepcollection[ac] - eps) / minimaltimestep);
+        temporary_cluster_ids[ac] = int((timestepcollection[ac] - eps) / minimaltimestep);
         if (temporary_cluster_ids[ac] > n_clusters)
           n_clusters = temporary_cluster_ids[ac];
       }
@@ -119,45 +114,36 @@ namespace HDG_WE
         cell_have_slower_neighbor.clear();
         for (unsigned int c = 0; c < n_clusters; ++c)
           {
-            typename Triangulation<dim>::active_cell_iterator
-              cell = tria.begin_active(),
-              endc = tria.end();
+            typename Triangulation<dim>::active_cell_iterator cell = tria.begin_active(),
+                                                              endc = tria.end();
             for (; cell != endc; ++cell)
               if (!cell->is_artificial() && !cell->is_ghost())
                 {
                   if (temporary_cluster_ids[cell->active_cell_index()] == c)
                     {
                       bool is_anyone_faster = false;
-                      for (unsigned int n = 0;
-                           n < GeometryInfo<dim>::faces_per_cell;
-                           ++n)
+                      for (unsigned int n = 0; n < GeometryInfo<dim>::faces_per_cell; ++n)
                         if (cell->neighbor_index(n) >= 0)
                           {
                             if (cell->neighbor(n)->has_children() &&
                                 !cell->neighbor(n)->is_artificial())
                               {
                                 for (unsigned int subfaces = 0;
-                                     subfaces <
-                                     GeometryInfo<dim>::max_children_per_face;
+                                     subfaces < GeometryInfo<dim>::max_children_per_face;
                                      ++subfaces)
                                   {
                                     if (temporary_cluster_ids
-                                          [cell
-                                             ->neighbor_child_on_subface(
-                                               n, subfaces)
+                                          [cell->neighbor_child_on_subface(n, subfaces)
                                              ->active_cell_index()] < c)
                                       is_anyone_faster = true;
                                   }
                               }
-                            else if (temporary_cluster_ids
-                                         [cell->neighbor(n)
-                                            ->active_cell_index()] < c &&
+                            else if (temporary_cluster_ids[cell->neighbor(n)
+                                                             ->active_cell_index()] < c &&
                                      !cell->neighbor(n)->is_artificial())
                               is_anyone_faster = true;
                           }
-                      for (unsigned int n = 0;
-                           n < GeometryInfo<dim>::faces_per_cell;
-                           ++n)
+                      for (unsigned int n = 0; n < GeometryInfo<dim>::faces_per_cell; ++n)
                         {
                           if (cell->neighbor_index(n) >= 0)
                             {
@@ -170,40 +156,35 @@ namespace HDG_WE
                                        ++subfaces)
                                     {
                                       if (temporary_cluster_ids
-                                            [cell
-                                               ->neighbor_child_on_subface(
-                                                 n, subfaces)
+                                            [cell->neighbor_child_on_subface(n, subfaces)
                                                ->active_cell_index()] > c)
                                         {
                                           if (is_anyone_faster)
                                             temporary_cluster_ids
                                               [cell
-                                                 ->neighbor_child_on_subface(
-                                                   n, subfaces)
+                                                 ->neighbor_child_on_subface(n, subfaces)
                                                  ->active_cell_index()] = c;
                                           else
                                             temporary_cluster_ids
                                               [cell
-                                                 ->neighbor_child_on_subface(
-                                                   n, subfaces)
+                                                 ->neighbor_child_on_subface(n, subfaces)
                                                  ->active_cell_index()] = c + 1;
                                         }
                                     }
                                 }
                               else if (!cell->neighbor(n)->is_artificial())
                                 {
-                                  if (temporary_cluster_ids
-                                        [cell->neighbor(n)
-                                           ->active_cell_index()] > c)
+                                  if (temporary_cluster_ids[cell->neighbor(n)
+                                                              ->active_cell_index()] > c)
                                     {
                                       if (is_anyone_faster)
-                                        temporary_cluster_ids
-                                          [cell->neighbor(n)
-                                             ->active_cell_index()] = c;
+                                        temporary_cluster_ids[cell->neighbor(n)
+                                                                ->active_cell_index()] =
+                                          c;
                                       else
-                                        temporary_cluster_ids
-                                          [cell->neighbor(n)
-                                             ->active_cell_index()] = c + 1;
+                                        temporary_cluster_ids[cell->neighbor(n)
+                                                                ->active_cell_index()] =
+                                          c + 1;
                                     }
                                 }
                             }
@@ -215,10 +196,8 @@ namespace HDG_WE
 
         // communicate cluster ids now
         {
-          distributed_cell_categories = 0.;
-          typename Triangulation<dim>::active_cell_iterator cell =
-                                                              tria
-                                                                .begin_active(),
+          distributed_cell_categories                            = 0.;
+          typename Triangulation<dim>::active_cell_iterator cell = tria.begin_active(),
                                                             endc = tria.end();
           for (; cell != endc; ++cell)
             if (!cell->is_artificial()) // && !cell->is_ghost())
@@ -228,8 +207,7 @@ namespace HDG_WE
                     temporary_cluster_ids[cell->active_cell_index()];
               }
 
-          distributed_cell_categories.compress(
-            VectorOperation::min); // minimize
+          distributed_cell_categories.compress(VectorOperation::min); // minimize
           distributed_cell_categories.update_ghost_values();
 
           // and bring back
@@ -239,27 +217,24 @@ namespace HDG_WE
               {
                 temporary_cluster_ids[cell->active_cell_index()] =
                   static_cast<unsigned int>(
-                    distributed_cell_categories[contiguous_dof_index_for_cell
-                                                  [cell->active_cell_index()]]);
+                    distributed_cell_categories
+                      [contiguous_dof_index_for_cell[cell->active_cell_index()]]);
               }
         }
         // determine if a cell has a faster neighbor
         cell_have_faster_neighbor.resize(tria.n_active_cells(), false);
         cell_have_slower_neighbor.resize(tria.n_active_cells(), false);
 
-        faster_and_slower_neighbor = false;
-        typename Triangulation<dim>::active_cell_iterator cell =
-                                                            tria.begin_active(),
+        faster_and_slower_neighbor                             = false;
+        typename Triangulation<dim>::active_cell_iterator cell = tria.begin_active(),
                                                           endc = tria.end();
         for (; cell != endc; ++cell)
           if (!cell->is_artificial()) // && !cell->is_ghost())
             {
-              unsigned int current_c =
-                temporary_cluster_ids[cell->active_cell_index()];
-              bool is_anyone_faster = false;
-              bool is_anyone_slower = false;
-              for (unsigned int n = 0; n < GeometryInfo<dim>::faces_per_cell;
-                   ++n)
+              unsigned int current_c = temporary_cluster_ids[cell->active_cell_index()];
+              bool         is_anyone_faster = false;
+              bool         is_anyone_slower = false;
+              for (unsigned int n = 0; n < GeometryInfo<dim>::faces_per_cell; ++n)
                 {
                   if (cell->neighbor_index(n) >= 0)
                     {
@@ -267,39 +242,30 @@ namespace HDG_WE
                           !cell->neighbor(n)->is_artificial())
                         {
                           for (unsigned int subfaces = 0;
-                               subfaces <
-                               GeometryInfo<dim>::max_children_per_face;
+                               subfaces < GeometryInfo<dim>::max_children_per_face;
                                ++subfaces)
                             {
                               if (temporary_cluster_ids
-                                    [cell
-                                       ->neighbor_child_on_subface(n, subfaces)
+                                    [cell->neighbor_child_on_subface(n, subfaces)
                                        ->active_cell_index()] < current_c)
                                 {
                                   is_anyone_faster = true;
-                                  cell_have_faster_neighbor
-                                    [cell->active_cell_index()] = true;
+                                  cell_have_faster_neighbor[cell->active_cell_index()] =
+                                    true;
                                 }
                               else if (temporary_cluster_ids
-                                         [cell
-                                            ->neighbor_child_on_subface(
-                                              n, subfaces)
+                                         [cell->neighbor_child_on_subface(n, subfaces)
                                             ->active_cell_index()] > current_c)
                                 {
                                   is_anyone_slower = true;
-                                  cell_have_slower_neighbor
-                                    [cell->active_cell_index()] = true;
+                                  cell_have_slower_neighbor[cell->active_cell_index()] =
+                                    true;
                                 }
                               if (int(temporary_cluster_ids
-                                        [cell
-                                           ->neighbor_child_on_subface(n,
-                                                                       subfaces)
-                                           ->active_cell_index()]) <
-                                    int(current_c - 1) ||
+                                        [cell->neighbor_child_on_subface(n, subfaces)
+                                           ->active_cell_index()]) < int(current_c - 1) ||
                                   temporary_cluster_ids
-                                      [cell
-                                         ->neighbor_child_on_subface(n,
-                                                                     subfaces)
+                                      [cell->neighbor_child_on_subface(n, subfaces)
                                          ->active_cell_index()] > current_c + 1)
                                 {
                                   faster_and_slower_neighbor = true;
@@ -309,23 +275,20 @@ namespace HDG_WE
                       else if (!cell->neighbor(n)->is_artificial())
                         {
                           if (temporary_cluster_ids[cell->neighbor(n)
-                                                      ->active_cell_index()] <
-                              current_c)
+                                                      ->active_cell_index()] < current_c)
                             {
-                              is_anyone_faster = true;
-                              cell_have_faster_neighbor
-                                [cell->active_cell_index()] = true;
+                              is_anyone_faster                                     = true;
+                              cell_have_faster_neighbor[cell->active_cell_index()] = true;
                             }
-                          else if (temporary_cluster_ids
-                                     [cell->neighbor(n)->active_cell_index()] >
+                          else if (temporary_cluster_ids[cell->neighbor(n)
+                                                           ->active_cell_index()] >
                                    current_c)
                             {
-                              is_anyone_slower = true;
-                              cell_have_slower_neighbor
-                                [cell->active_cell_index()] = true;
+                              is_anyone_slower                                     = true;
+                              cell_have_slower_neighbor[cell->active_cell_index()] = true;
                             }
-                          if (int(temporary_cluster_ids
-                                    [cell->neighbor(n)->active_cell_index()]) <
+                          if (int(temporary_cluster_ids[cell->neighbor(n)
+                                                          ->active_cell_index()]) <
                                 int(current_c - 1) ||
                               temporary_cluster_ids[cell->neighbor(n)
                                                       ->active_cell_index()] >
@@ -342,27 +305,23 @@ namespace HDG_WE
                 }
             } // for (; cell!=endc; ++cell)
         faster_and_slower_neighbor = static_cast<unsigned int>(
-          Utilities::MPI::max(double(faster_and_slower_neighbor),
-                              MPI_COMM_WORLD));
+          Utilities::MPI::max(double(faster_and_slower_neighbor), MPI_COMM_WORLD));
       } // while (faster_and_slower_neighbor && count<100)
 
     if (count == 100)
-      Assert(false,
-             ExcMessage("could not find suited categories in 100 iterations"));
-    std::cout << "needed to iterate " << count
-              << " times to get valid categories" << std::endl;
+      Assert(false, ExcMessage("could not find suited categories in 100 iterations"));
+    std::cout << "needed to iterate " << count << " times to get valid categories"
+              << std::endl;
 
     element_categories.resize(tria.n_active_cells());
     n_clusters = 0;
     for (unsigned int ac = 0; ac < tria.n_active_cells(); ++ac)
       {
         element_categories[ac] =
-          3 * temporary_cluster_ids[ac] +
-          1 * int(cell_have_slower_neighbor[ac]) +
-          2 *
-            int(cell_have_faster_neighbor[ac]); // build category indicating not
-                                                // only cluster but also if it
-                                                // has faster or slower neighbor
+          3 * temporary_cluster_ids[ac] + 1 * int(cell_have_slower_neighbor[ac]) +
+          2 * int(cell_have_faster_neighbor[ac]); // build category indicating not
+                                                  // only cluster but also if it
+                                                  // has faster or slower neighbor
         if (temporary_cluster_ids[ac] > n_clusters)
           n_clusters = temporary_cluster_ids[ac]; // reset n_clusters
       }
@@ -394,12 +353,10 @@ namespace HDG_WE
 
     // setup weights of cells for processors according to clusters
     triapll->signals.weight.connect(
-      [&](const typename parallel::distributed::Triangulation<
-            dim>::cell_iterator &cell,
+      [&](const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
           const typename parallel::distributed::Triangulation<dim>::CellStatus)
         -> unsigned int {
-        return (n_clusters -
-                int(element_categories[cell->active_cell_index()] / 3) - 1) *
+        return (n_clusters - int(element_categories[cell->active_cell_index()] / 3) - 1) *
                cluster_diff * 1000;
       });
 
@@ -430,18 +387,14 @@ namespace HDG_WE
   void
   ClusterManager<Number>::setup_mf_index_to_cell_index(const Operator &op)
   {
-    mf_index.resize(op.get_matrix_free()
-                      .get_dof_handler(0)
-                      .get_triangulation()
-                      .n_active_cells());
+    mf_index.resize(
+      op.get_matrix_free().get_dof_handler(0).get_triangulation().n_active_cells());
 
     for (unsigned int i = 0; i < n_cells_with_ghosts; ++i)
       for (unsigned int v = 0;
            v < op.get_matrix_free().n_active_entries_per_cell_batch(i);
            ++v)
-        mf_index
-          [op.get_matrix_free().get_cell_iterator(i, v)->active_cell_index()] =
-            i;
+        mf_index[op.get_matrix_free().get_cell_iterator(i, v)->active_cell_index()] = i;
   }
 
   template <typename Number>
@@ -455,8 +408,8 @@ namespace HDG_WE
     // steps now must be set to multiples of this dt
     fastest_time_step = op.get_time_control().get_time_step();
 
-    n_cells_with_ghosts = op.get_matrix_free().n_cell_batches() +
-                          op.get_matrix_free().n_ghost_cell_batches();
+    n_cells_with_ghosts =
+      op.get_matrix_free().n_cell_batches() + op.get_matrix_free().n_ghost_cell_batches();
     n_cells = op.get_matrix_free().n_cell_batches();
 
     // setup matrix free index to cell index
@@ -475,12 +428,11 @@ namespace HDG_WE
            v < op.get_matrix_free().n_active_entries_per_cell_batch(cell);
            ++v)
         {
-          unsigned int index = op.get_matrix_free()
-                                 .get_cell_iterator(cell, v)
-                                 ->active_cell_index();
-          cell_cluster_ids[cell] = int(
-            element_categories[index] /
-            3); // use the categories to determine cluster and faster and slower
+          unsigned int index =
+            op.get_matrix_free().get_cell_iterator(cell, v)->active_cell_index();
+          cell_cluster_ids[cell] =
+            int(element_categories[index] /
+                3); // use the categories to determine cluster and faster and slower
           if (element_categories[index] % 3 == 2)
             cell_have_faster_neighbor[cell] = true;
           if (element_categories[index] % 3 == 1)
@@ -498,8 +450,7 @@ namespace HDG_WE
     phi_to_fluxmemory.clear();
     phi_neighbor_to_fluxmemory.clear();
     cluster_timelevels.resize(n_clusters, op.get_time_control().get_time());
-    cell_timelevels.resize(n_cells_with_ghosts,
-                           op.get_time_control().get_time());
+    cell_timelevels.resize(n_cells_with_ghosts, op.get_time_control().get_time());
     evaluate_cell.resize(n_cells_with_ghosts, false);
     update_cell.resize(n_cells_with_ghosts, false);
     evaluate_face.resize(op.get_matrix_free().n_inner_face_batches() +
@@ -511,9 +462,8 @@ namespace HDG_WE
                                op.get_matrix_free().n_boundary_face_batches());
     phi_to_fluxmemory.resize(op.get_matrix_free().n_inner_face_batches() +
                              op.get_matrix_free().n_boundary_face_batches());
-    phi_neighbor_to_fluxmemory.resize(
-      op.get_matrix_free().n_inner_face_batches() +
-      op.get_matrix_free().n_boundary_face_batches());
+    phi_neighbor_to_fluxmemory.resize(op.get_matrix_free().n_inner_face_batches() +
+                                      op.get_matrix_free().n_boundary_face_batches());
 
     // set the cluster time steps
     cluster_timestepmultiples.resize(n_clusters);
@@ -532,15 +482,13 @@ namespace HDG_WE
         for (unsigned c = 0; c < n_clusters; ++c)
           std::cout << "cluster  " << c << " contains " << num_cell_cluster[c]
                     << " cells and works with time step "
-                    << cluster_timestepmultiples[c] * fastest_time_step
-                    << std::endl;
+                    << cluster_timestepmultiples[c] * fastest_time_step << std::endl;
 
         std::cout << "cluster_timestepmultiples" << std::endl;
         for (unsigned c = 0; c < n_clusters; ++c)
           std::cout << cluster_timestepmultiples[c] << std::endl;
-        std::cout << "n_clusters " << n_clusters << " clusterdiff "
-                  << cluster_diff << " levelmax "
-                  << cluster_diff * (n_clusters - 1) + 1 << std::endl;
+        std::cout << "n_clusters " << n_clusters << " clusterdiff " << cluster_diff
+                  << " levelmax " << cluster_diff * (n_clusters - 1) + 1 << std::endl;
       }
 
     // determine how one updates from one global time step to the next
@@ -562,11 +510,9 @@ namespace HDG_WE
                 if (c == 0)
                   {
                     if (std::min(max_level,
-                                 templevels[c] +
-                                   cluster_timestepmultiples[c]) <=
+                                 templevels[c] + cluster_timestepmultiples[c]) <=
                         std::min(max_level,
-                                 templevels[c + 1] +
-                                   cluster_timestepmultiples[c + 1]))
+                                 templevels[c + 1] + cluster_timestepmultiples[c + 1]))
                       {
                         t_a_b[0] = templevels[c] * fastest_time_step;
                         templevels[c] += cluster_timestepmultiples[c];
@@ -578,11 +524,9 @@ namespace HDG_WE
                 else if (c == n_clusters - 1)
                   {
                     if (std::min(max_level,
-                                 templevels[c] +
-                                   cluster_timestepmultiples[c]) <=
+                                 templevels[c] + cluster_timestepmultiples[c]) <=
                         std::min(max_level,
-                                 templevels[c - 1] +
-                                   cluster_timestepmultiples[c - 1]))
+                                 templevels[c - 1] + cluster_timestepmultiples[c - 1]))
                       {
                         t_a_b[0] = templevels[c] * fastest_time_step;
                         templevels[c] += cluster_timestepmultiples[c];
@@ -594,17 +538,14 @@ namespace HDG_WE
                 else
                   {
                     if (std::min(max_level,
-                                 templevels[c] +
-                                   cluster_timestepmultiples[c]) <=
+                                 templevels[c] + cluster_timestepmultiples[c]) <=
                           std::min(max_level,
                                    templevels[c + 1] +
                                      cluster_timestepmultiples[c + 1]) &&
                         std::min(max_level,
-                                 templevels[c] +
-                                   cluster_timestepmultiples[c]) <=
+                                 templevels[c] + cluster_timestepmultiples[c]) <=
                           std::min(max_level,
-                                   templevels[c - 1] +
-                                     cluster_timestepmultiples[c - 1]))
+                                   templevels[c - 1] + cluster_timestepmultiples[c - 1]))
                       {
                         t_a_b[0] = templevels[c] * fastest_time_step;
                         templevels[c] += cluster_timestepmultiples[c];
@@ -653,14 +594,11 @@ namespace HDG_WE
     cell_neighbor_index.clear();
     cell_neighbor_active_cell_index.clear();
 
-    cell_neighbor_has_children.resize(
-      GeometryInfo<Operator::dimension>::faces_per_cell);
-    cell_neighbor_index.resize(
-      GeometryInfo<Operator::dimension>::faces_per_cell);
+    cell_neighbor_has_children.resize(GeometryInfo<Operator::dimension>::faces_per_cell);
+    cell_neighbor_index.resize(GeometryInfo<Operator::dimension>::faces_per_cell);
     cell_neighbor_active_cell_index.resize(
       GeometryInfo<Operator::dimension>::faces_per_cell);
-    for (unsigned n = 0; n < GeometryInfo<Operator::dimension>::faces_per_cell;
-         ++n)
+    for (unsigned n = 0; n < GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
       {
         cell_neighbor_has_children[n].resize(n_cells_with_ghosts);
         cell_neighbor_index[n].resize(n_vect);
@@ -672,9 +610,7 @@ namespace HDG_WE
           }
       }
 
-    for (unsigned int n = 0;
-         n < GeometryInfo<Operator::dimension>::faces_per_cell;
-         ++n)
+    for (unsigned int n = 0; n < GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
       for (unsigned int e = 0; e < n_cells_with_ghosts; ++e)
         for (unsigned int v = 0;
              v < op.get_matrix_free().n_active_entries_per_cell_batch(e);
@@ -683,25 +619,20 @@ namespace HDG_WE
             cell_neighbor_index[n][v][e] =
               op.get_matrix_free().get_cell_iterator(e, v)->neighbor_index(n);
             if (cell_neighbor_index[n][v][e] >= 0)
-              cell_neighbor_active_cell_index[n][v][e] =
-                op.get_matrix_free()
-                  .get_cell_iterator(e, v)
-                  ->neighbor(n)
-                  ->active_cell_index();
+              cell_neighbor_active_cell_index[n][v][e] = op.get_matrix_free()
+                                                           .get_cell_iterator(e, v)
+                                                           ->neighbor(n)
+                                                           ->active_cell_index();
           }
 
     for (unsigned int e = 0; e < n_cells_with_ghosts; ++e)
-      for (unsigned int n = 0;
-           n < GeometryInfo<Operator::dimension>::faces_per_cell;
-           ++n)
+      for (unsigned int n = 0; n < GeometryInfo<Operator::dimension>::faces_per_cell; ++n)
         for (unsigned int v = 0;
              v < op.get_matrix_free().n_active_entries_per_cell_batch(e);
              ++v)
           if (cell_neighbor_index[n][v][e] >= 0)
-            cell_neighbor_has_children[n][e][v] = op.get_matrix_free()
-                                                    .get_cell_iterator(e, v)
-                                                    ->neighbor(n)
-                                                    ->has_children();
+            cell_neighbor_has_children[n][e][v] =
+              op.get_matrix_free().get_cell_iterator(e, v)->neighbor(n)->has_children();
 
     mf_faceinfo_cellsminus.clear();
     mf_faceinfo_cellsplus.clear();
@@ -709,16 +640,13 @@ namespace HDG_WE
     mf_faceinfo_cellsplus.resize(n_vect);
     for (unsigned int v = 0; v < n_vect; ++v)
       {
-        mf_faceinfo_cellsminus[v].resize(
-          op.get_matrix_free().n_inner_face_batches() +
-          op.get_matrix_free().n_boundary_face_batches());
-        mf_faceinfo_cellsplus[v].resize(
-          op.get_matrix_free().n_inner_face_batches());
+        mf_faceinfo_cellsminus[v].resize(op.get_matrix_free().n_inner_face_batches() +
+                                         op.get_matrix_free().n_boundary_face_batches());
+        mf_faceinfo_cellsplus[v].resize(op.get_matrix_free().n_inner_face_batches());
       }
 
-    for (unsigned int f = 0;
-         f < op.get_matrix_free().n_inner_face_batches() +
-               op.get_matrix_free().n_boundary_face_batches();
+    for (unsigned int f = 0; f < op.get_matrix_free().n_inner_face_batches() +
+                                   op.get_matrix_free().n_boundary_face_batches();
          ++f)
       for (unsigned int v = 0; v < n_vect; ++v)
         {
@@ -763,10 +691,10 @@ namespace HDG_WE
         if (actual_cluster_time != cluster_update_times[cycle][0])
           {
             std::cout << "actual cluster time " << actual_cluster_time
-                      << " cluster update times "
-                      << cluster_update_times[cycle][0] << std::endl;
-            std::cout << "cycle " << cycle << " actual cluster "
-                      << actual_cluster << std::endl;
+                      << " cluster update times " << cluster_update_times[cycle][0]
+                      << std::endl;
+            std::cout << "cycle " << cycle << " actual cluster " << actual_cluster
+                      << std::endl;
             Assert(false, ExcMessage("cluster time missmatch"));
           }
         is_fluxmemory_considered = true;
@@ -783,13 +711,13 @@ namespace HDG_WE
         if (actual_cluster > 0)
           {
             faster_cluster_time = cluster_timelevels[actual_cluster - 1];
-            t1fa = std::max(faster_cluster_time, actual_cluster_time);
-            t2fa = std::min(faster_cluster_time +
-                              cluster_timestepmultiples[actual_cluster - 1] *
-                                fastest_time_step,
-                            actual_cluster_time +
-                              cluster_timestepmultiples[actual_cluster] *
-                                fastest_time_step);
+            t1fa                = std::max(faster_cluster_time, actual_cluster_time);
+            t2fa =
+              std::min(faster_cluster_time +
+                         cluster_timestepmultiples[actual_cluster - 1] *
+                           fastest_time_step,
+                       actual_cluster_time +
+                         cluster_timestepmultiples[actual_cluster] * fastest_time_step);
             t2fa = std::min(t2fa, op.get_time_control().get_time());
           }
         else
@@ -802,12 +730,12 @@ namespace HDG_WE
           {
             double slower_cluster_time = cluster_timelevels[actual_cluster + 1];
             t1sl = std::max(slower_cluster_time, actual_cluster_time);
-            t2sl = std::min(slower_cluster_time +
-                              cluster_timestepmultiples[actual_cluster + 1] *
-                                fastest_time_step,
-                            actual_cluster_time +
-                              cluster_timestepmultiples[actual_cluster] *
-                                fastest_time_step);
+            t2sl =
+              std::min(slower_cluster_time +
+                         cluster_timestepmultiples[actual_cluster + 1] *
+                           fastest_time_step,
+                       actual_cluster_time +
+                         cluster_timestepmultiples[actual_cluster] * fastest_time_step);
             t2sl = std::min(t2sl, op.get_time_control().get_time());
           }
         else
@@ -817,14 +745,12 @@ namespace HDG_WE
           }
         t1sa = actual_cluster_time;
         t2sa = std::min(actual_cluster_time +
-                          cluster_timestepmultiples[actual_cluster] *
-                            fastest_time_step,
+                          cluster_timestepmultiples[actual_cluster] * fastest_time_step,
                         op.get_time_control().get_time());
 
-        dt = std::min(cluster_timestepmultiples[actual_cluster] *
-                        fastest_time_step,
-                      op.get_time_control().get_time() -
-                        cluster_timelevels[actual_cluster]);
+        dt =
+          std::min(cluster_timestepmultiples[actual_cluster] * fastest_time_step,
+                   op.get_time_control().get_time() - cluster_timelevels[actual_cluster]);
 
         update_elements(op, dst, state, actual_cluster);
 
@@ -852,8 +778,7 @@ namespace HDG_WE
             std::vector<bool> temp_faster(n_cells_with_ghosts);
             std::vector<bool> temp_slower(n_cells_with_ghosts);
             if (actual_cluster > 0)
-              if (std::abs(actual_cluster_time -
-                           cluster_timelevels[actual_cluster - 1]) >
+              if (std::abs(actual_cluster_time - cluster_timelevels[actual_cluster - 1]) >
                   relative_tolerance * fastest_time_step)
                 {
                   for (unsigned int e = 0; e < n_cells_with_ghosts; ++e)
@@ -871,19 +796,15 @@ namespace HDG_WE
                   for (unsigned int e = 0; e < n_cells_with_ghosts; ++e)
                     {
                       for (unsigned int v = 0;
-                           v <
-                           op.get_matrix_free().n_active_entries_per_cell_batch(
-                             e);
+                           v < op.get_matrix_free().n_active_entries_per_cell_batch(e);
                            ++v)
                         for (unsigned int n = 0;
-                             n <
-                             GeometryInfo<Operator::dimension>::faces_per_cell;
+                             n < GeometryInfo<Operator::dimension>::faces_per_cell;
                              ++n)
                           if (cell_neighbor_index[n][v][e] >= 0)
                             {
-                              if (temp_faster
-                                    [mf_index[cell_neighbor_active_cell_index
-                                                [n][v][e]]] &&
+                              if (temp_faster[mf_index[cell_neighbor_active_cell_index
+                                                         [n][v][e]]] &&
                                   cell_cluster_ids[e] == actual_cluster - 1)
                                 update_cell[e] = true;
                               else
@@ -912,8 +833,7 @@ namespace HDG_WE
 
             // slower cluster
             if (actual_cluster < n_clusters - 1)
-              if (std::abs(actual_cluster_time -
-                           cluster_timelevels[actual_cluster + 1]) >
+              if (std::abs(actual_cluster_time - cluster_timelevels[actual_cluster + 1]) >
                   relative_tolerance * fastest_time_step)
                 {
                   for (unsigned int e = 0; e < n_cells_with_ghosts; ++e)
@@ -932,18 +852,14 @@ namespace HDG_WE
                   for (unsigned int e = 0; e < n_cells_with_ghosts; ++e)
                     {
                       for (unsigned int v = 0;
-                           v <
-                           op.get_matrix_free().n_active_entries_per_cell_batch(
-                             e);
+                           v < op.get_matrix_free().n_active_entries_per_cell_batch(e);
                            ++v)
                         for (unsigned int n = 0;
-                             n <
-                             GeometryInfo<Operator::dimension>::faces_per_cell;
+                             n < GeometryInfo<Operator::dimension>::faces_per_cell;
                              ++n)
                           if (cell_neighbor_index[n][v][e] >= 0)
                             if (temp_slower
-                                  [mf_index[cell_neighbor_active_cell_index
-                                              [n][v][e]]] &&
+                                  [mf_index[cell_neighbor_active_cell_index[n][v][e]]] &&
                                 cell_cluster_ids[e] == actual_cluster + 1)
                               {
                                 update_cell[e] = true;
@@ -980,9 +896,8 @@ namespace HDG_WE
                   evaluate_cell[e] = false;
               }
 
-            for (unsigned int f = 0;
-                 f < op.get_matrix_free().n_inner_face_batches() +
-                       op.get_matrix_free().n_boundary_face_batches();
+            for (unsigned int f = 0; f < op.get_matrix_free().n_inner_face_batches() +
+                                           op.get_matrix_free().n_boundary_face_batches();
                  ++f)
               {
                 evaluate_face[f]       = false;
@@ -994,8 +909,7 @@ namespace HDG_WE
                       {
                         if (mf_faceinfo_cellsminus[v][f] !=
                               numbers::invalid_unsigned_int &&
-                            mf_faceinfo_cellsplus[v][f] !=
-                              numbers::invalid_unsigned_int)
+                            mf_faceinfo_cellsplus[v][f] != numbers::invalid_unsigned_int)
                           if (evaluate_cell[mf_faceinfo_cellsminus[v][f] /
                                             Operator::n_vect] ||
                               evaluate_cell[mf_faceinfo_cellsplus[v][f] /
@@ -1016,8 +930,7 @@ namespace HDG_WE
                   {
                     for (unsigned int v = 0; v < Operator::n_vect; ++v)
                       {
-                        if (mf_faceinfo_cellsminus[v][f] !=
-                            numbers::invalid_unsigned_int)
+                        if (mf_faceinfo_cellsminus[v][f] != numbers::invalid_unsigned_int)
                           if (evaluate_cell[mf_faceinfo_cellsminus[v][f] /
                                             Operator::n_vect])
                             {
@@ -1088,23 +1001,21 @@ namespace HDG_WE
                       {
                         for (unsigned int subfaces = 0;
                              subfaces <
-                             GeometryInfo<
-                               Operator::dimension>::max_children_per_face;
+                             GeometryInfo<Operator::dimension>::max_children_per_face;
                              ++subfaces)
                           {
                             if (update_cell
                                   [mf_index[op.get_matrix_free()
                                               .get_cell_iterator(e, v)
-                                              ->neighbor_child_on_subface(
-                                                n, subfaces)
+                                              ->neighbor_child_on_subface(n, subfaces)
                                               ->active_cell_index()]])
                               is_neighbor_of_update_cell[e] = true;
                           }
                       }
                     else
                       {
-                        if (update_cell[mf_index[cell_neighbor_active_cell_index
-                                                   [n][v][e]]])
+                        if (update_cell
+                              [mf_index[cell_neighbor_active_cell_index[n][v][e]]])
                           is_neighbor_of_update_cell[e] = true;
                       }
                   }
@@ -1131,8 +1042,7 @@ namespace HDG_WE
                     cell_have_faster_neighbor[e] && update_cell[e])
                   evaluate_cell[e] = true;
                 else if (cell_cluster_ids[e] == actual_cluster - 1 &&
-                         cell_have_slower_neighbor[e] &&
-                         is_neighbor_of_update_cell[e])
+                         cell_have_slower_neighbor[e] && is_neighbor_of_update_cell[e])
                   evaluate_cell[e] = true;
                 else
                   evaluate_cell[e] = false;
@@ -1141,56 +1051,43 @@ namespace HDG_WE
             // setup the face list that need evaluation (if face is in between
             // update cell and faster cluster) also, setup the masks for the
             // write functions
-            for (unsigned int f = 0;
-                 f < op.get_matrix_free().n_inner_face_batches() +
-                       op.get_matrix_free().n_boundary_face_batches();
+            for (unsigned int f = 0; f < op.get_matrix_free().n_inner_face_batches() +
+                                           op.get_matrix_free().n_boundary_face_batches();
                  ++f)
               {
-                evaluate_face[f]       = false;
-                phi_to_dst[f]          = std::bitset<Operator::n_vect>(false);
-                phi_neighbor_to_dst[f] = std::bitset<Operator::n_vect>(false);
-                phi_to_fluxmemory[f]   = std::bitset<Operator::n_vect>(false);
-                phi_neighbor_to_fluxmemory[f] =
-                  std::bitset<Operator::n_vect>(false);
+                evaluate_face[f]              = false;
+                phi_to_dst[f]                 = std::bitset<Operator::n_vect>(false);
+                phi_neighbor_to_dst[f]        = std::bitset<Operator::n_vect>(false);
+                phi_to_fluxmemory[f]          = std::bitset<Operator::n_vect>(false);
+                phi_neighbor_to_fluxmemory[f] = std::bitset<Operator::n_vect>(false);
                 // inner faces
                 if (f < op.get_matrix_free().n_inner_face_batches())
                   {
                     for (unsigned int v = 0; v < Operator::n_vect; ++v)
-                      if (mf_faceinfo_cellsminus[v][f] !=
-                            numbers::invalid_unsigned_int &&
-                          mf_faceinfo_cellsplus[v][f] !=
-                            numbers::invalid_unsigned_int)
+                      if (mf_faceinfo_cellsminus[v][f] != numbers::invalid_unsigned_int &&
+                          mf_faceinfo_cellsplus[v][f] != numbers::invalid_unsigned_int)
                         if (evaluate_cell[mf_faceinfo_cellsminus[v][f] /
                                           Operator::n_vect] &&
-                            evaluate_cell[mf_faceinfo_cellsplus[v][f] /
-                                          Operator::n_vect])
+                            evaluate_cell[mf_faceinfo_cellsplus[v][f] / Operator::n_vect])
                           {
                             // set face evaluation
                             if ((cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
-                                                  Operator::n_vect] ==
-                                   actual_cluster &&
+                                                  Operator::n_vect] == actual_cluster &&
                                  cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
-                                                  Operator::n_vect] !=
-                                   actual_cluster &&
-                                 is_neighbor_of_update_cell
-                                   [mf_faceinfo_cellsplus[v][f] /
-                                    Operator::n_vect]) ||
+                                                  Operator::n_vect] != actual_cluster &&
+                                 is_neighbor_of_update_cell[mf_faceinfo_cellsplus[v][f] /
+                                                            Operator::n_vect]) ||
                                 (cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
-                                                  Operator::n_vect] !=
-                                   actual_cluster &&
+                                                  Operator::n_vect] != actual_cluster &&
                                  cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
-                                                  Operator::n_vect] ==
-                                   actual_cluster &&
-                                 is_neighbor_of_update_cell
-                                   [mf_faceinfo_cellsminus[v][f] /
-                                    Operator::n_vect]))
+                                                  Operator::n_vect] == actual_cluster &&
+                                 is_neighbor_of_update_cell[mf_faceinfo_cellsminus[v][f] /
+                                                            Operator::n_vect]))
                               {
                                 evaluate_face[f] = true;
                                 // set masks
-                                if (cell_cluster_ids[mf_faceinfo_cellsminus[v]
-                                                                           [f] /
-                                                     Operator::n_vect] ==
-                                    actual_cluster)
+                                if (cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
+                                                     Operator::n_vect] == actual_cluster)
                                   {
                                     phi_to_dst[f][v] = true;
                                     if (write_to_fluxmemory)
@@ -1235,8 +1132,7 @@ namespace HDG_WE
                     cell_have_slower_neighbor[e] && update_cell[e])
                   evaluate_cell[e] = true;
                 else if (cell_cluster_ids[e] == actual_cluster + 1 &&
-                         cell_have_faster_neighbor[e] &&
-                         is_neighbor_of_update_cell[e])
+                         cell_have_faster_neighbor[e] && is_neighbor_of_update_cell[e])
                   evaluate_cell[e] = true;
                 else
                   evaluate_cell[e] = false;
@@ -1245,25 +1141,21 @@ namespace HDG_WE
             // setup the face list that need evaluation (if face is in between
             // actual cluster and slower cluster) also, setup the masks for the
             // write functions
-            for (unsigned int f = 0;
-                 f < op.get_matrix_free().n_inner_face_batches() +
-                       op.get_matrix_free().n_boundary_face_batches();
+            for (unsigned int f = 0; f < op.get_matrix_free().n_inner_face_batches() +
+                                           op.get_matrix_free().n_boundary_face_batches();
                  ++f)
               {
-                evaluate_face[f]       = false;
-                phi_to_dst[f]          = std::bitset<Operator::n_vect>(false);
-                phi_neighbor_to_dst[f] = std::bitset<Operator::n_vect>(false);
-                phi_to_fluxmemory[f]   = std::bitset<Operator::n_vect>(false);
-                phi_neighbor_to_fluxmemory[f] =
-                  std::bitset<Operator::n_vect>(false);
+                evaluate_face[f]              = false;
+                phi_to_dst[f]                 = std::bitset<Operator::n_vect>(false);
+                phi_neighbor_to_dst[f]        = std::bitset<Operator::n_vect>(false);
+                phi_to_fluxmemory[f]          = std::bitset<Operator::n_vect>(false);
+                phi_neighbor_to_fluxmemory[f] = std::bitset<Operator::n_vect>(false);
                 // inner faces
                 if (f < op.get_matrix_free().n_inner_face_batches())
                   {
                     for (unsigned int v = 0; v < Operator::n_vect; ++v)
-                      if (mf_faceinfo_cellsminus[v][f] !=
-                            numbers::invalid_unsigned_int &&
-                          mf_faceinfo_cellsplus[v][f] !=
-                            numbers::invalid_unsigned_int)
+                      if (mf_faceinfo_cellsminus[v][f] != numbers::invalid_unsigned_int &&
+                          mf_faceinfo_cellsplus[v][f] != numbers::invalid_unsigned_int)
                         {
                           if (evaluate_cell[mf_faceinfo_cellsminus[v][f] /
                                             Operator::n_vect] &&
@@ -1271,31 +1163,24 @@ namespace HDG_WE
                                             Operator::n_vect])
                             {
                               // set face evaluation
-                              if (
-                                (cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
-                                                  Operator::n_vect] ==
-                                   actual_cluster &&
-                                 cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
-                                                  Operator::n_vect] !=
-                                   actual_cluster &&
-                                 is_neighbor_of_update_cell
-                                   [mf_faceinfo_cellsplus[v][f] /
-                                    Operator::n_vect]) ||
-                                (cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
-                                                  Operator::n_vect] !=
-                                   actual_cluster &&
-                                 cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
-                                                  Operator::n_vect] ==
-                                   actual_cluster &&
-                                 is_neighbor_of_update_cell
-                                   [mf_faceinfo_cellsminus[v][f] /
-                                    Operator::n_vect]))
+                              if ((cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
+                                                    Operator::n_vect] == actual_cluster &&
+                                   cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
+                                                    Operator::n_vect] != actual_cluster &&
+                                   is_neighbor_of_update_cell
+                                     [mf_faceinfo_cellsplus[v][f] / Operator::n_vect]) ||
+                                  (cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
+                                                    Operator::n_vect] != actual_cluster &&
+                                   cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
+                                                    Operator::n_vect] == actual_cluster &&
+                                   is_neighbor_of_update_cell
+                                     [mf_faceinfo_cellsminus[v][f] / Operator::n_vect]))
                                 {
                                   evaluate_face[f] = true;
                                   // set masks
-                                  if (cell_cluster_ids
-                                        [mf_faceinfo_cellsminus[v][f] /
-                                         Operator::n_vect] == actual_cluster)
+                                  if (cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
+                                                       Operator::n_vect] ==
+                                      actual_cluster)
                                     {
                                       phi_to_dst[f][v] = true;
                                       if (write_to_fluxmemory)
@@ -1331,8 +1216,7 @@ namespace HDG_WE
         {
           if (cell_cluster_ids[e] == actual_cluster && update_cell[e])
             evaluate_cell[e] = true;
-          else if (cell_cluster_ids[e] == actual_cluster &&
-                   is_neighbor_of_update_cell[e])
+          else if (cell_cluster_ids[e] == actual_cluster && is_neighbor_of_update_cell[e])
             evaluate_cell[e] = true;
           else
             evaluate_cell[e] = false;
@@ -1341,9 +1225,8 @@ namespace HDG_WE
       // setup the face list that need evaluation (if face is in between two
       // cells with actual cluster) also, setup the masks for the write
       // functions
-      for (unsigned int f = 0;
-           f < op.get_matrix_free().n_inner_face_batches() +
-                 op.get_matrix_free().n_boundary_face_batches();
+      for (unsigned int f = 0; f < op.get_matrix_free().n_inner_face_batches() +
+                                     op.get_matrix_free().n_boundary_face_batches();
            ++f)
         {
           evaluate_face[f]              = false;
@@ -1355,26 +1238,17 @@ namespace HDG_WE
           if (f < op.get_matrix_free().n_inner_face_batches())
             {
               for (unsigned int v = 0; v < Operator::n_vect; ++v)
-                if (mf_faceinfo_cellsminus[v][f] !=
-                      numbers::invalid_unsigned_int &&
-                    mf_faceinfo_cellsplus[v][f] !=
-                      numbers::invalid_unsigned_int)
+                if (mf_faceinfo_cellsminus[v][f] != numbers::invalid_unsigned_int &&
+                    mf_faceinfo_cellsplus[v][f] != numbers::invalid_unsigned_int)
                   {
-                    if ((update_cell[mf_faceinfo_cellsminus[v][f] /
-                                     Operator::n_vect] &&
-                         update_cell[mf_faceinfo_cellsplus[v][f] /
-                                     Operator::n_vect]) ||
-                        (update_cell[mf_faceinfo_cellsminus[v][f] /
-                                     Operator::n_vect] &&
-                         evaluate_cell[mf_faceinfo_cellsplus[v][f] /
-                                       Operator::n_vect] &&
+                    if ((update_cell[mf_faceinfo_cellsminus[v][f] / Operator::n_vect] &&
+                         update_cell[mf_faceinfo_cellsplus[v][f] / Operator::n_vect]) ||
+                        (update_cell[mf_faceinfo_cellsminus[v][f] / Operator::n_vect] &&
+                         evaluate_cell[mf_faceinfo_cellsplus[v][f] / Operator::n_vect] &&
                          cell_cluster_ids[mf_faceinfo_cellsplus[v][f] /
-                                          Operator::n_vect] ==
-                           actual_cluster) ||
-                        (evaluate_cell[mf_faceinfo_cellsminus[v][f] /
-                                       Operator::n_vect] &&
-                         update_cell[mf_faceinfo_cellsplus[v][f] /
-                                     Operator::n_vect] &&
+                                          Operator::n_vect] == actual_cluster) ||
+                        (evaluate_cell[mf_faceinfo_cellsminus[v][f] / Operator::n_vect] &&
+                         update_cell[mf_faceinfo_cellsplus[v][f] / Operator::n_vect] &&
                          cell_cluster_ids[mf_faceinfo_cellsminus[v][f] /
                                           Operator::n_vect] == actual_cluster))
                       {
@@ -1389,10 +1263,8 @@ namespace HDG_WE
             {
               for (unsigned int v = 0; v < Operator::n_vect; ++v)
                 {
-                  if (mf_faceinfo_cellsminus[v][f] !=
-                      numbers::invalid_unsigned_int)
-                    if (evaluate_cell[mf_faceinfo_cellsminus[v][f] /
-                                      Operator::n_vect])
+                  if (mf_faceinfo_cellsminus[v][f] != numbers::invalid_unsigned_int)
+                    if (evaluate_cell[mf_faceinfo_cellsminus[v][f] / Operator::n_vect])
                       {
                         evaluate_face[f] = true;
                         phi_to_dst[f][v] = true;

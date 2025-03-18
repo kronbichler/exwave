@@ -40,7 +40,7 @@ namespace HDG_WE
     void
     perform_time_step(const Operator                                   &op,
                       const LinearAlgebra::distributed::Vector<Number> &src,
-                      LinearAlgebra::distributed::Vector<Number> &dst) const;
+                      LinearAlgebra::distributed::Vector<Number>       &dst) const;
 
     template <int dim>
     void
@@ -64,12 +64,10 @@ namespace HDG_WE
     template <int dim>
     unsigned int
     cell_weight(
-      const typename parallel::distributed::Triangulation<dim>::cell_iterator
-        &cell,
+      const typename parallel::distributed::Triangulation<dim>::cell_iterator &cell,
       const typename parallel::distributed::Triangulation<dim>::CellStatus)
     {
-      const unsigned int cell_weight =
-        element_categories[cell->active_cell_index()] / 3;
+      const unsigned int cell_weight = element_categories[cell->active_cell_index()] / 3;
 
       return cell_weight;
     }
@@ -86,8 +84,7 @@ namespace HDG_WE
     Number
     get_cell_time_step(unsigned int cell) const
     {
-      return cluster_timestepmultiples[cell_cluster_ids[cell]] *
-             fastest_time_step;
+      return cluster_timestepmultiples[cell_cluster_ids[cell]] * fastest_time_step;
     }
 
     bool
@@ -245,9 +242,8 @@ namespace HDG_WE
 
     // helper vectors to avoid the get_cell_iterator in update_elements
     std::vector<std::vector<std::bitset<n_vect>>>
-      cell_neighbor_has_children; // order is n,e,v
-    std::vector<std::vector<std::vector<int>>>
-      cell_neighbor_index; // order is n,v,e
+      cell_neighbor_has_children;                                   // order is n,e,v
+    std::vector<std::vector<std::vector<int>>> cell_neighbor_index; // order is n,v,e
     std::vector<std::vector<std::vector<int>>>
       cell_neighbor_active_cell_index; // order is n,v,e
 
