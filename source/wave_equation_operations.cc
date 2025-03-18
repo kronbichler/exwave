@@ -233,17 +233,17 @@ namespace HDG_WE
     additional_data.mapping_update_flags_boundary_faces = (update_JxW_values |
                                                            update_quadrature_points | update_normal_vectors |
                                                            update_values);
-    additional_data.initialize_mapping = false;
+    additional_data.initialize_mapping = true;
     additional_data.cell_vectorization_category = vectorization_categories;
     additional_data.cell_vectorization_categories_strict = true;
 
     data.reinit(mapping,dof_handlers,constraints,quadratures,additional_data);
 
-    std::vector<types::global_dof_index> renumbering;
-    data.renumber_dofs(renumbering, 0);
-    const_cast<DoFHandler<dim> *>(dof_handlers[0])->renumber_dofs(renumbering);
-    additional_data.initialize_mapping = true;
-    data.reinit(mapping,dof_handlers,constraints,quadratures,additional_data);
+    //std::vector<types::global_dof_index> renumbering;
+    //data.renumber_dofs(renumbering, 0);
+    //const_cast<DoFHandler<dim> *>(dof_handlers[0])->renumber_dofs(renumbering);
+    //additional_data.initialize_mapping = true;
+    //data.reinit(mapping,dof_handlers,constraints,quadratures,additional_data);
 
     mass_matrix_data.reset(new InverseMassMatrixData<dim,fe_degree,value_type>(data));
     reset_data_vectors(mats);
