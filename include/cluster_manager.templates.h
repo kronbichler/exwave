@@ -177,7 +177,7 @@ namespace HDG_WE
           for (; cell!=endc; ++cell)
             if (!cell->is_artificial())
               {
-                temporary_cluster_ids[cell->active_cell_index()] = distributed_cell_categories[contiguous_dof_index_for_cell[cell->active_cell_index()]];
+                temporary_cluster_ids[cell->active_cell_index()] = static_cast<unsigned int>(distributed_cell_categories[contiguous_dof_index_for_cell[cell->active_cell_index()]]);
               }
         }
         // determine if a cell has a faster neighbor
@@ -242,7 +242,7 @@ namespace HDG_WE
                   faster_and_slower_neighbor = true;
                 }
             } // for (; cell!=endc; ++cell)
-        faster_and_slower_neighbor = Utilities::MPI::max(double(faster_and_slower_neighbor),MPI_COMM_WORLD);
+        faster_and_slower_neighbor = static_cast<unsigned int>(Utilities::MPI::max(double(faster_and_slower_neighbor), MPI_COMM_WORLD));
       } // while (faster_and_slower_neighbor && count<100)
 
     if (count==100)
